@@ -15,6 +15,7 @@ const editor=document.getElementById('app')!;
 let controller:WorkbookController|undefined;
 let currentPanel:string|undefined;
 let panelGeneration=0;
+let globalNotice='';
 let webMCP={available:false,dispose:()=>{}};
 let actor:{id:string;name:string;kind:string;email:string};
 const escape=(value:unknown)=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
@@ -28,7 +29,7 @@ const mark=`<span class="office-wordmark">bento<span>/</span>office</span>`;
 const button=(id:string,name:string,label:string,extra='')=>`<button type="button" class="office-button ${extra}" data-office="${id}" title="${escape(label)}">${icon(name)}<span>${escape(label)}</span></button>`;
 function languagePicker(){return `<select id="office-language" aria-label="${escape(t('Language'))}">${LOCALE_CHOICES.map(l=>`<option value="${l.code}" ${l.code===locale()?'selected':''}>${l.label}</option>`).join('')}</select>`;}
 function wireLanguage(){document.getElementById('office-language')?.addEventListener('change',e=>{setLocale((e.target as HTMLSelectElement).value);location.reload();});}
-function notice(error:unknown){const banner=document.getElementById('office-panel-notice')??document.getElementById('office-notice');if(banner){banner.textContent=error instanceof Error?error.message:String(error);banner.hidden=false;}}
+function notice(error:unknown,global=false){const panel=document.getElementById('office-panel'),message=error instanceof Error?error.message:String(error);const banner=!global&&panel&&!panel.hidden?document.getElementById('office-panel-notice'):document.getElementById('office-notice');if(banner){banner.textContent=message;banner.hidden=false;if(banner.id==='office-notice'){globalNotice=message;const problem=document.getElementById('office-problem');if(problem)problem.hidden=false;}}}
 function busy(button:HTMLButtonElement,work:()=>Promise<unknown>){button.disabled=true;void work().catch(notice).finally(()=>{button.disabled=false;});}
 function bind(id:string,action:(event:MouseEvent)=>void){document.querySelector<HTMLButtonElement>(`[data-office="${id}"]`)?.addEventListener('click',action);}
 
@@ -70,8 +71,8 @@ async function openWorkbook(id:string){
     const status=document.getElementById('office-save-status')!;
     status.textContent=controller!.error?ot('Not saved'):controller!.pending?ot('Saving to workspace…'):controller!.readOnly?roleName('viewer'):ot('Saved to workspace');
     status.classList.toggle('is-pending',controller!.pending);
-    const problem=document.getElementById('office-problem')!;problem.hidden=!controller!.error;
-    if(controller!.error)notice(controller!.error);
+    const problem=document.getElementById('office-problem')!;problem.hidden=!controller!.error&&!globalNotice;
+    if(controller!.error)notice(controller!.error,true);
     const title=document.querySelector<HTMLInputElement>('.dx-title');if(title&&document.activeElement!==title)title.value=controller!.store?.doc.title??controller!.confirmed.title;
   };
   const host:OfficeHost={readOnly:controller.readOnly,pending:()=>controller!.pending,save:async()=>{try{await controller!.flush();}catch(error){notice(error);}},about:()=>void renderPanel('settings'),attach:(store,view)=>{controller!.attach(store,view);controller!.onState();},
@@ -82,8 +83,8 @@ async function openWorkbook(id:string){
   const importFindings=sessionStorage.getItem('office-import-findings');if(importFindings){sessionStorage.removeItem('office-import-findings');await renderPanel('changes');notice(importFindings);}
   for(const name of ['changes','sharing','agents'])bind(name,()=>void renderPanel(name));
   bind('export',()=>void exportHTML().catch(notice));bind('draft',()=>void exportHTML(true).catch(notice));
-  bind('retry',()=>void controller!.retry().catch(notice));
-  bind('reload',()=>{if(window.confirm(ot('Discard changes?')))void controller!.discardLocal().catch(notice);});
+  bind('retry',()=>{globalNotice='';void controller!.retry().catch(notice);});
+  bind('reload',()=>{if(window.confirm(ot('Discard changes?'))){globalNotice='';void controller!.discardLocal().catch(notice);}});
   // A dropped file must not navigate away from a shared draft. Imports are
   // explicit from the library (new workbook) or dash's Data menu (new sheets).
   document.addEventListener('dragover',event=>{if(event.dataTransfer?.types.includes('Files'))event.preventDefault();});

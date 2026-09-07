@@ -2022,7 +2022,7 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
   }
 
   window.addEventListener('beforeunload', (e) => {
-    if (dirty && !store.readOnly) { e.preventDefault(); e.returnValue = '' }
+    if (hosted ? hosted.pending() : dirty && !store.readOnly) { e.preventDefault(); e.returnValue = '' }
   })
 
   // --- the scripting/agent surface

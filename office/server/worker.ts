@@ -32,7 +32,7 @@ export async function apiFetch(request:Request,env:Env):Promise<Response> {
     const url=new URL(request.url),path=url.pathname.split('/').filter(Boolean),method=request.method;
     if(url.pathname==='/api/health'&&method==='GET')return json({ok:true,product:'bento/office'});
     const db=new Storage(env),actor=await identify(request,db),office=new Office(db,actor);
-    if(url.pathname==='/mcp') {
+    if(url.pathname==='/mcp'||url.pathname==='/api/mcp') {
       if(method!=='POST')return new Response(null,{status:405,headers:{allow:'POST'}});
       return mcpFetch(request,office,await body(request,z.unknown()));
     }

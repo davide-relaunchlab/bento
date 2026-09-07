@@ -98,7 +98,7 @@ test('delegated credentials stop after collaborator removal and cannot grant mor
 test('an actual MCP client discovers tools, proposes a change and reads the accepted formula',async()=>{
   const w=await create(),root='/api/workbooks/'+w.id;
   const agent=await api(alice,root+'/agents','POST',{name:'MCP analyst',permission:'propose',expiresDays:1});
-  const transport=new StreamableHTTPClientTransport(new URL('http://localhost/mcp'),{
+  const transport=new StreamableHTTPClientTransport(new URL('http://localhost/api/mcp'),{
     requestInit:{headers:{authorization:'Bearer '+agent.body.token}},
     fetch:async(input,init)=>{
       const req=new Request(input,init);

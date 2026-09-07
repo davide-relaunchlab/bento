@@ -985,6 +985,14 @@ export class Store {
    */
   say: (message: string) => void = () => {}
 
+  /** A hosted document uses the same model, with durable transactions owned
+   * by its authenticated host. Absent in all standalone documents. */
+  delegate?: {
+    commit(patches:Patch|Patch[],runKey?:string):void;
+    undo():boolean; redo():boolean; canUndo():boolean; canRedo():boolean;
+    replaceDoc(next:DashDoc):void;
+  }
+
   constructor(doc: DashDoc) {
     this.doc = doc
   }
@@ -1014,8 +1022,8 @@ export class Store {
    * was to reach through `unknown` and call the PRIVATE `emit`. That works
    * until the day the event names change, and nothing tells you.
    */
-  changedRemotely(touched: Touched = { all: true }): void {
-    this.doc.modified = new Date().toISOString()
+  changedRemotely(touched: Touched = { all: true }, stamp = true): void {
+    if (stamp) this.doc.modified = new Date().toISOString()
     this.lastTouched = touched
     // NOT a barrier reset: somebody else's edit is not the reader's last
     // action, exactly as it is not an entry in their undo history.
@@ -1083,6 +1091,7 @@ export class Store {
 
   commit(patches: Patch | Patch[]): void {
     if (this.readOnly) return
+    if (this.delegate) { this.delegate.commit(patches); return }
     this.endRun()
     const list = this.runBefore(Array.isArray(patches) ? patches : [patches])
     if (!list.length) return
@@ -1115,6 +1124,7 @@ export class Store {
    */
   runEdit(cellKey: string, patch: Patch | Patch[]): void {
     if (this.readOnly) return
+    if (this.delegate) { this.delegate.commit(patch, cellKey); return }
     if (this.runCell !== cellKey) {
       this.endRun()
       this.runCell = cellKey
@@ -1277,6 +1287,7 @@ export class Store {
 
   undo(): boolean {
     if (this.readOnly) return false
+    if (this.delegate) return this.delegate.undo()
     this.endRun()
     if (this.blocked(this.undoStack.length > 0)) return false
     const e = this.undoStack.pop()
@@ -1287,6 +1298,7 @@ export class Store {
 
   redo(): boolean {
     if (this.readOnly) return false
+    if (this.delegate) return this.delegate.redo()
     this.endRun()
     if (this.blocked(this.redoStack.length > 0)) return false
     const e = this.redoStack.pop()
@@ -1295,13 +1307,14 @@ export class Store {
     return true
   }
 
-  get canUndo(): boolean { return this.undoStack.length > 0 }
-  get canRedo(): boolean { return this.redoStack.length > 0 }
+  get canUndo(): boolean { return this.delegate ? this.delegate.canUndo() : this.undoStack.length > 0 }
+  get canRedo(): boolean { return this.delegate ? this.delegate.canRedo() : this.redoStack.length > 0 }
   /** live bytes held by history — the number the cap is enforced against */
   get historyBytes(): number { return this.undoStack.reduce((n, e) => n + e.bytes, 0) }
 
   /** Wholesale replacement (agent load, version restore). The one `all` case. */
   replaceDoc(next: DashDoc): void {
+    if (this.delegate) { this.delegate.replaceDoc(next); return }
     this.endRun()
     this.doc = next
     this.undoStack.length = 0

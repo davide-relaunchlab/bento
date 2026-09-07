@@ -1,0 +1,31 @@
+{
+  "name": "bento-office",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tsx office/dev.ts",
+    "build": "tsx office/build.ts",
+    "typecheck": "tsc -p office/tsconfig.json",
+    "test": "tsx --test office/tests/*.test.ts",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "drizzle-orm": "0.45.2",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260907.1",
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@openai/sites-vite-plugin": "0.2.0",
+    "@types/node": "24.13.2",
+    "drizzle-kit": "0.31.10",
+    "esbuild": "0.28.2",
+    "miniflare": "4.20260730.0",
+    "tsx": "4.23.13",
+    "typescript": "5.8.3",
+    "vite": "8.2.2"
+  }
+}

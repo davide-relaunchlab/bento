@@ -89,6 +89,7 @@ import { rangeKeys, stylePatch } from './cellprops.ts'
 import { mountComments, flatComments } from './comments.ts'
 import { mountRecovery } from './recovery.ts'
 import { mountDropOpen } from './dropopen.ts'
+import { officeHost } from './officehost.ts'
 import { Grid, canvasKey, CANVAS_MAX_ROWS, CANVAS_MAX_COLS } from './grid.ts'
 // Paste Special and Text to Columns. Both are DOM-free decisions with their
 // own rigs (scripts/test-dash-pastespecial.ts, scripts/test-dash-tocolumns.ts);
@@ -161,7 +162,7 @@ configureApp({
   manifestUrl: 'https://bento.page/releases/dash/manifest.json',
 })
 
-capturePristine()
+if (!officeHost()) capturePristine()
 
 // The file-manager thumbnail. Registered BEFORE any save can happen: a save
 // that ran first would write a shell with no preview in it, and the next
@@ -295,14 +296,15 @@ function refuse(res: Extract<ParseResult, { ok: false }>): void {
  * this argument stays silent rather than phoning home.
  */
 function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', saved = false): void {
+  const hosted = officeHost()
   document.title = `${doc.title} — ${appConfig().appName}`
   dismissSplash()
 
   const store = new Store(doc)
-  if (frozen) store.readOnly = true
+  if (frozen || hosted?.readOnly) store.readOnly = true
   // A template mints a fresh docId on open; a read-only copy locks the store
   // (and with it the title field, which reads store.readOnly below).
-  adoptOpenedDoc(doc, store)
+  if (!hosted) adoptOpenedDoc(doc, store)
 
   const app = document.getElementById('app')!
   app.innerHTML =
@@ -597,7 +599,7 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
   const addSheet = (after: string, sheet: Sheet, findings: PromoteFinding[]): void => {
     const at = store.doc.sheets.findIndex((s) => s.id === after) + 1
     store.commit({ op: 'setSheet', id: sheet.id, sheet, at })
-    grid.setSheet(sheet.id)
+    if (store.doc.sheets.some(s => s.id === sheet.id)) grid.setSheet(sheet.id)
     // WHAT COULD BE WRONG GOES FIRST. Every line in this banner looks the same,
     // and a promotion emits both kinds: "3 values could not be read as number"
     // needs a decision, "the range is still on the spreadsheet" is reassurance.
@@ -1222,6 +1224,7 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
   let dirty = false
   let timer: number | undefined
   const markDirty = () => {
+    if (hosted) { dirty = hosted.pending(); dirtyEl.hidden = !dirty; return }
     dirty = true
     dirtyEl.hidden = false
     clearTimeout(timer)
@@ -1319,8 +1322,8 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
   // minting the same rid for different rows would merge them into one and lose
   // a row, and rid is identity everywhere — the CRDT node key, overrides,
   // comments. See model.ts's partitioning note.
-  const sync = new SyncSession(store)
-  setRidBlock(ridBase(ridBlockFor(sync.actor)))
+  const sync = hosted ? undefined : new SyncSession(store)
+  setRidBlock(ridBase(ridBlockFor(sync?.actor ?? crypto.randomUUID())))
   ;(window as unknown as Record<string, unknown>).__sync = sync
 
   store.on('doc', markDirty)
@@ -1352,22 +1355,23 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
   // straight off the screen again.
   const barEnd = app.querySelector<HTMLElement>('.dx-bar-end') ?? app.querySelector<HTMLElement>('.dx-bar')!
   barEnd.insertBefore(peopleEl, barEnd.firstChild)
-  mountPeople(peopleEl, sync, store)
-  mountAbout(app, aboutHooks)
+  if (sync) mountPeople(peopleEl, sync, store)
+  if (!hosted) mountAbout(app, aboutHooks)
+  else app.querySelector('[data-act="settings"]')?.addEventListener('click', () => hosted.about())
   // PLATFORM §6: the signed update check, once, at launch. It badges ⓘ rather
   // than interrupting. `shouldCheckAtLaunch` gates it on a SAVED workbook, the
   // check not opted out, and Offline mode off.
-  checkAtLaunch({ saved })
+  if (!hosted) checkAtLaunch({ saved })
   // …and an EXPLICIT way in. mountAbout only arms the wordmark and the version
   // chip, and nobody guesses that a logo is a button — the chip, meanwhile, is
   // the first thing the responsive rules drop. The ⓘ button is the real door;
   // the other two stay as shortcuts for whoever already found them.
-  app.querySelector('[data-act="about"]')!.addEventListener('click', () => openAbout(aboutHooks))
+  app.querySelector('[data-act="about"]')!.addEventListener('click', () => hosted ? hosted.about() : openAbout(aboutHooks))
   // The keyboard, made findable: a ? button beside About, and the ? key. The
   // card is GENERATED from select.ts's key map, so a binding added there shows
   // up here with no edit.
   mountHelp(app)
-  void pruneOld()
+  if (!hosted) void pruneOld()
 
   // --- the READ half of autosave, and opening a file by dropping it ---------
   //
@@ -1397,8 +1401,8 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
       document.title = `${next.title} — ${appConfig().appName}`
     },
   }
-  void mountRecovery(openHost)
-  mountDropOpen({
+  if (!hosted) void mountRecovery(openHost)
+  if (!hosted) mountDropOpen({
     ...openHost,
     importText: (text: string, source: string) => applyImport(store, findingsEl, grid, text, source),
     notice: (message: string | ReadonlyArray<{ message: string }>) =>
@@ -1445,7 +1449,7 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
 
   // --- actions
   app.querySelector('[data-act="save"]')!.addEventListener('click', () => { void doSave() })
-  installSaveMenu({
+  if (!hosted) installSaveMenu({
     button: app.querySelector<HTMLElement>('[data-act="save"]')!,
     store,
     save: doSave,
@@ -1957,6 +1961,7 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
   })
 
   async function doSave(): Promise<void> {
+    if (hosted) { await hosted.save(); return }
     if (store.readOnly) return
     // Budget check before every write that grows the document. Not a refusal:
     // the user is told what will actually break, in this browser, and decides.
@@ -2021,7 +2026,8 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
   })
 
   // --- the scripting/agent surface
-  ;(window as unknown as Record<string, unknown>).bento = {
+  hosted?.attach(store, { showingSheet: () => grid.showingId(), showSheet: (id) => grid.setSheet(id) })
+  ;(window as unknown as Record<string, unknown>).bento = hosted?.api ?? {
     format: doc.format,
     get doc() { return store.doc },
     serialize: () => serializeFile(store.doc),
@@ -2129,10 +2135,8 @@ function applyImport(store: Store, host: HTMLElement, grid: Grid, text: string, 
     source,
     at: new Date().toISOString(),
   })
-  store.commit({ op: 'setTitle', title: store.doc.title })  // one checkpoint boundary
-  store.doc.sheets.push(r.sheet)
-  store.replaceDoc(store.doc)
-  grid.setSheet(sheetId)
+  store.commit({ op: 'setSheet', id: r.sheet.id, sheet: r.sheet })
+  if (store.doc.sheets.some(s => s.id === sheetId)) grid.setSheet(sheetId)
   showFindings(host, r.findings)
 }
 
@@ -2481,10 +2485,14 @@ async function pickXlsx(store: Store, host: HTMLElement, grid: Grid): Promise<vo
           idPrefix: `xl-${Math.floor(Date.now() % 1e8).toString(36)}`,
           names: true,
         })
-        store.doc.sheets.push(...r.sheets)
-        installNames(store.doc, r.names)
-        store.replaceDoc(store.doc)
-        if (r.sheets.length) grid.setSheet(r.sheets[0].id)
+        if (refuseWrite(host, store)) return
+        const next = structuredClone(store.doc)
+        installNames(next, r.names)
+        store.commit([
+          ...r.sheets.map((sheet) => ({ op: 'setSheet' as const, id: sheet.id, sheet })),
+          ...(next.names ? [{ op: 'setDocProps' as const, props: { names: next.names } }] : []),
+        ])
+        if (r.sheets.length && store.doc.sheets.some(s => s.id === r.sheets[0].id)) grid.setSheet(r.sheets[0].id)
         showFindings(host, r.findings as never)
       } catch (e) {
         // A refusal, not a crash: the file on disk is untouched.
@@ -2536,4 +2544,3 @@ async function saveXlsx(
     }] : []),
   ])
 }
-

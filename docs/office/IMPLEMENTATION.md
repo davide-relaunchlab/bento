@@ -26,4 +26,6 @@ Base reale: dash e kernel del fork davide-relaunchlab/bento, upstream 0100083. N
 
 WebMCP nativo: tutti i 10 strumenti registrati ed eseguiti in Codex IAB, input invalidi rifiutati. Proposta di A2=8 e A3=SUM(A1:A2), approvazione nella UI, ricalcolo 20; dataset creato/letto/annullato. Browser desktop e 390px verificati. Esportazione HTML scaricata dalla UI: identità e formula conservate, credenziali sync assenti, gate del blocco documento superato.
 
-MCP locale verificato; accesso attraverso il dispatcher privato Sites ancora da verificare dopo la prima pubblicazione.
+Pubblicazione privata Sites riuscita. Accesso con l’account proprietario, creazione persistente, proposta WebMCP e approvazione verificati sul sito remoto: formula B4=SUM(B2:B3), risultato 20. Annullo e ripristino verificati sullo stesso foglio.
+
+MCP tramite client reale e /api/mcp verificato nel runtime locale. Il controllo Sites con include_mcp_connection restituisce «Sites MCP is not enabled for this Site owner». La dichiarazione capabilities:[mcp] viene riconosciuta, ma l’account non dispone del servizio gestito. Richiesta al proprietario la scelta fra ingresso pubblico con ACL applicative e mantenimento privato con WebMCP; nessun allargamento degli accessi effettuato. Il requisito degli agenti MCP esterni rimane aperto fino alla scelta e alla prova sul runtime remoto.

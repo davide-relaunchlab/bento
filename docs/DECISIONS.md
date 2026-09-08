@@ -6404,3 +6404,13 @@ interface. Engine controls remain live nodes, with their existing commands
 and permission state. Standalone chrome remains the default when no host
 composition is supplied. Retain the document formats and provenance;
 this is not a wholesale replacement of the editing components.
+
+## 2026-09-08 — WebMCP file creation
+
+The hosted tool catalog exposes `create_workbook` for blank text documents,
+spreadsheets and presentations. Creation uses the signed-in person's private
+workspace and records browser-agent attribution. Document-scoped bearer tokens
+cannot create new files, even with write permission on their existing document.
+An operation ID is scoped to the person and deduplicates concurrent retries;
+reusing it with different creation parameters returns a conflict. Existing UI
+creation and document identity contracts remain unchanged.

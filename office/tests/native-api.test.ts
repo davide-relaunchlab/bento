@@ -140,3 +140,30 @@ test('native read tools are discoverable and usable over actual authenticated MC
     }finally{await client.close();}
   }
 });
+
+for(const format of ['bento/dash','bento/type','bento/slides'] as const){
+  test('create_workbook tool persists '+format+' and safely retries concurrent creation',async()=>{
+    const input={title:'Prova MCP',format,operationId:crypto.randomUUID()};
+    const results=await Promise.all([api(owner,'/api/tools/create_workbook','POST',input),api(owner,'/api/tools/create_workbook','POST',input)]);
+    for(const result of results)assert.equal(result.status,200,JSON.stringify(result.body));
+    assert.equal(results[0].body.id,results[1].body.id);
+    assert.equal(results[0].body.docId,results[1].body.docId);
+    const saved=await api(owner,'/api/workbooks/'+results[0].body.id);
+    assert.equal(saved.body.document.format,format);assert.equal(saved.body.document.title,input.title);
+    assert.equal((await api(owner,'/api/tools/create_workbook','POST',{...input,title:'Different'})).status,409);
+    const again=await api(owner,'/api/tools/create_workbook','POST',input);assert.equal(again.body.id,saved.body.id);
+    const history=await api(owner,'/api/tools/list_changes','POST',{workbookId:saved.body.id});
+    assert.equal(history.body.changes[0].actor_kind,'browser_agent');
+  });
+}
+test('create_workbook tool rejects invalid inputs, unauthenticated callers and document-scoped agents',async()=>{
+  const input={title:'New file',format:'bento/slides',operationId:crypto.randomUUID()};
+  assert.equal((await api(null,'/api/tools/create_workbook','POST',input)).status,401);
+  for(const invalid of [{...input,title:'  '},{...input,format:'anything'},{title:'Missing id',format:'bento/slides'},{...input,ownerId:'someone-else'}])
+    assert.equal((await api(owner,'/api/tools/create_workbook','POST',invalid)).status,400);
+  const w=await create('bento/slides');
+  for(const permission of ['read','propose','write']){
+    const agent=await api(owner,'/api/workbooks/'+w.id+'/agents','POST',{name:'Scoped agent',permission,expiresDays:1});
+    assert.equal((await api(agent.body.token,'/api/tools/create_workbook','POST',input)).status,403);
+  }
+});

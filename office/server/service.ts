@@ -33,10 +33,27 @@ export class Office {
     return {...this.metadata(w),revision:revision??w.revision,currentRevision:w.revision,role:a.role,agentPermission:a.actor.token?.permission??null,
       document:revision===undefined?await this.db.json<OfficeDocument>(w.content_key):await this.snapshot(id,revision)};
   }
-  async create(title:string,document?:unknown,format?:OfficeDocument['format'],folderId?:string|null) {
-    personOnly(this.actor);
+  async createFromTool(title:string,format:OfficeDocument['format'],operationId:string) {
+    // A document-scoped bearer token must never gain workspace creation rights.
+    if(this.actor.token || this.actor.kind==='agent')throw new OfficeError('forbidden','La delega è limitata a un documento esistente.',403);
+    const identity=await digest({userId:this.actor.userId,operationId});
+    const requestHash=await digest({title,format});
+    const result=await this.create(title,undefined,format,undefined,{id:'created-'+identity,requestHash});
+    return {id:result.id,docId:result.docId,title:result.title,format:result.format,revision:result.revision,url:'/?workbook='+encodeURIComponent(result.id)};
+  }
+  private async createdReplay(id:string,requestHash:string) {
+    const existing=await this.db.one<{request_hash:string}>('SELECT request_hash FROM changes WHERE workbook_id=? AND revision=0',[id]);
+    if(!existing)return null;
+    if(existing.request_hash!==requestHash)throw conflict();
+    return this.get(id);
+  }
+  async create(title:string,document?:unknown,format?:OfficeDocument['format'],folderId?:string|null,creation?:{id:string;requestHash:string}) {
+    if(creation){
+      if(this.actor.token || this.actor.kind==='agent')throw new OfficeError('forbidden','La delega è limitata a un documento esistente.',403);
+      const replay=await this.createdReplay(creation.id,creation.requestHash);if(replay)return replay;
+    }else personOnly(this.actor);
     if(folderId)await folderAccess(this.db,this.actor,folderId,true);
-    const doc=validateWorkbook(document??newWorkbook(title,format)),id=crypto.randomUUID(),now=Date.now(),changeId=crypto.randomUUID();
+    const doc=validateWorkbook(document??newWorkbook(title,format)),id=creation?.id??crypto.randomUUID(),now=Date.now(),changeId=crypto.randomUUID();
     if(format && doc.format!==format)throw new OfficeError('invalid_format','Il formato del documento non corrisponde al tipo richiesto.',400);
     doc.modified=new Date(now).toISOString();
     const key=await this.db.put(doc);
@@ -44,9 +61,13 @@ export class Office {
       await this.db.env.DB.batch([
         this.db.statement('INSERT INTO workbooks(id,doc_id,title,format,owner_id,revision,acl_version,content_key,created_at,updated_at,folder_id) VALUES(?,?,?,?,?,0,0,?,?,?,?)',[id,doc.docId,doc.title,doc.format,this.actor.userId,key,now,now,folderId??null]),
         this.db.statement('INSERT INTO members(id,workbook_id,user_id,email,display_name,role,created_at) VALUES(?,?,?,?,?,?,?)',[crypto.randomUUID(),id,this.actor.userId,this.actor.email!,this.actor.name,'owner',now]),
-        this.db.statement('INSERT INTO changes(workbook_id,revision,id,operation_id,request_hash,content_key,actor_id,actor_name,actor_kind,summary,kind,created_at) VALUES(?,0,?,?,?,?,?,?,?,?,?,?)',[id,changeId,'create','create',key,this.actor.id,this.actor.name,this.actor.kind,'Crea documento','create',now]),
+        this.db.statement('INSERT INTO changes(workbook_id,revision,id,operation_id,request_hash,content_key,actor_id,actor_name,actor_kind,summary,kind,created_at) VALUES(?,0,?,?,?,?,?,?,?,?,?,?)',[id,changeId,'create',creation?.requestHash??'create',key,this.actor.id,this.actor.name,this.actor.kind,'Crea documento','create',now]),
       ]);
-    } catch(error) { await this.db.discardUnreferenced([key]);throw error; }
+    } catch(error) {
+      await this.db.discardUnreferenced([key]);
+      if(creation){const replay=await this.createdReplay(id,creation.requestHash);if(replay)return replay;}
+      throw error;
+    }
     return this.get(id);
   }
   async move(id:string,folderId:string|null){

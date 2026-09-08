@@ -8,6 +8,7 @@ export async function invokeTool(office:Office,name:string,raw:unknown):Promise<
   const parsed=tool.schema.safeParse(raw);if(!parsed.success)throw new OfficeError('invalid_request','Parametri dello strumento non validi.',400,parsed.error.issues);
   const input=parsed.data as Record<string,any>,id=input.workbookId as string;
   switch(name) {
+    case 'create_workbook':return office.createFromTool(input.title,input.format,input.operationId);
     case 'list_workbooks':return {workbooks:await office.list()};
     case 'describe_workbook': {
       const w=await office.get(id),d=w.document;

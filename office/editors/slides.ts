@@ -12,7 +12,7 @@ import type {BentoDoc} from '../../slides/src/model.ts';
 import {getNativeHost} from './host.ts';
 
 const host = getNativeHost('bento/slides');
-configureApp({appId:'bento-slides',appName:'bento/slides',manifestUrl:''});
+configureApp({appId:'bento-slides',appName:'dowitme · slides',manifestUrl:''});
 startTheme();
 applyDirection();
 const doc = structuredClone(host.document) as BentoDoc;

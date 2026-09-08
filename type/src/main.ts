@@ -31,7 +31,7 @@ import { sign as signDoc, verifyChain, newKey } from './canon.ts';
 // (window title suffix, save-picker label, update manifest).
 configureApp({
   appId: 'bento-type',
-  appName: 'bento/type',
+  appName: 'dowitme · docs',
   manifestUrl: 'https://bento.page/releases/type/manifest.json',
 });
 
@@ -105,7 +105,7 @@ app.innerHTML = `
         <rect x="5" y="5" width="7" height="22" rx="2.5" fill="#5E7699"/>
         <rect x="14" y="5" width="13" height="10" rx="2.5" fill="#FF9E8A"/>
         <rect x="14" y="17" width="13" height="10" rx="2.5" fill="#F0EBE0"/>
-      </svg><b class="t-mark-word">bento<span>/</span>type</b>
+      </svg><b class="t-mark-word">dowitme<span>/</span>docs</b>
     </button>
     <button id="sidebar" class="t-btn" type="button"></button>
     <input id="doctitle" class="t-doctitle" spellcheck="false">
@@ -224,8 +224,8 @@ label('snap', ICONS.history, '', t('Snapshot'));
 label('review', ICONS.review, '', t('Review changes…'));
 label('sign', ICONS.sign, '', t('Sign…'));
 label('print', ICONS.print, '', t('Print or PDF…'));
-label('about', ICONS.sync, '', t('About bento/type'));
-byId('mark').title = t('About bento/type — version, updates, language');
+label('about', ICONS.sync, '', t('About bento/type').replace('bento/type', 'dowitme · docs'));
+byId('mark').title = t('About bento/type — version, updates, language').replace('bento/type', 'dowitme · docs');
 const showAbout = () => host ? host.about() : openAbout({
   store,
   pages: metrics.pages.length,
@@ -912,7 +912,7 @@ const markDirty = () => { dirty = true; paintTitle(); };
 function paintTitle() {
   const name = currentFileName();
   const docTitle = store.doc.title || t('Untitled');
-  document.title = `${dirty ? '• ' : ''}${docTitle} — bento/type`;
+  document.title = `${dirty ? '• ' : ''}${docTitle} — dowitme · docs`;
   const btn = document.getElementById('save')!;
   // Update the LABEL only. Setting textContent here wiped the icon that
   // label() had just installed, so the button silently lost its glyph the

@@ -160,7 +160,7 @@ const barBtn = (act: string, icon: string, label: string, tip: string, extra = '
 
 configureApp({
   appId: 'bento-dash',
-  appName: 'bento/dash',
+  appName: 'dowitme · sheets',
   manifestUrl: 'https://bento.page/releases/dash/manifest.json',
 })
 
@@ -338,7 +338,7 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
     `<rect x="14" y="5" width="13" height="10" rx="2.5" fill="#FF9E8A"/>` +
     `<rect x="14" y="17" width="13" height="10" rx="2.5" fill="#F0EBE0"/>` +
     `</svg>` +
-    `<span class="dx-mark-t"><span class="dx-mark-b">bento</span><span class="dx-slash">/</span>dash</span>` +
+    `<span class="dx-mark-t"><span class="dx-mark-b">dowitme</span><span class="dx-slash">/</span>sheets</span>` +
     `</span>` +
     `<input class="dx-title" value="">` +
     // Insert group. `display: contents` at wide widths (the six buttons sit in

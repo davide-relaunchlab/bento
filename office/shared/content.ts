@@ -15,7 +15,7 @@ type Guard={scope:Scope;hash:string};
 export type NativePreparedChange={kind:'native';format:NativeDocument['format'];docId:string;patches:NativePatch[];inverse:NativePatch[];guards:Guard[];undoGuards:Guard[];differences:{scope:Scope;before:unknown;after:unknown}[];warnings:[]};
 export type PreparedChange=dash.PreparedChange|NativePreparedChange;
 const copy=<T>(v:T):T=>structuredClone(v);
-const fail=(message='Contenuto bento non valido.'):never=>{throw new dash.OfficeError('invalid_document',message);};
+const fail=(message='Contenuto del documento non valido.'):never=>{throw new dash.OfficeError('invalid_document',message);};
 const record=(v:any):v is Record<string,any>=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const safeId=(v:unknown):v is string=>typeof v==='string'&&v.length>0&&v.length<=200&&!['__proto__','prototype','constructor'].includes(v);
 const fields:Record<NativeDocument['format'],Set<string>>={

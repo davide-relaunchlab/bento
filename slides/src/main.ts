@@ -33,7 +33,7 @@ import { onlineTransport, startSharing, stopSharing } from './sync/online'
 // (window title suffix, save-picker label, update manifest + its `app` check).
 configureApp({
   appId: 'bento-slides',
-  appName: 'bento/slides',
+  appName: 'dowitme · slides',
   manifestUrl: 'https://bento.page/releases/slides/manifest.json',
 })
 

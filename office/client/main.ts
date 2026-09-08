@@ -29,7 +29,7 @@ const icon=(name:string)=>`<svg viewBox="0 0 24 24" aria-hidden="true" width="18
   history:'<path d="M3 11a9 9 0 1 1 3 8M3 4v7h7M12 7v5l3 2"/>',agent:'<rect x="4" y="7" width="16" height="13" rx="4"/><path d="M12 3v4M8 12h.01M16 12h.01M9 16h6"/>',
   download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',check:'<path d="m5 12 4 4L19 6"/>',upload:'<path d="M12 16V4m-5 5 5-5 5 5M4 16v5h16v-5"/>',
 } as Record<string,string>)[name]??''}</svg>`;
-const mark=`<span class="office-wordmark">bento<span>/</span>office</span>`;
+const mark=`<span class="office-wordmark">dowitme</span>`;
 const button=(id:string,name:string,label:string,extra='')=>`<button type="button" class="office-button ${extra}" data-office="${id}" title="${escape(label)}">${icon(name)}<span>${escape(label)}</span></button>`;
 function languagePicker(){return `<select id="office-language" aria-label="${escape(t('Language'))}">${LOCALE_CHOICES.map(l=>`<option value="${l.code}" ${l.code===locale()?'selected':''}>${l.label}</option>`).join('')}</select>`;}
 function wireLanguage(){document.getElementById('office-language')?.addEventListener('change',e=>{setLocale((e.target as HTMLSelectElement).value);location.reload();});}
@@ -51,7 +51,7 @@ async function start(){
   }
 }
 async function archive(){
-  document.title='bento/office';
+  document.title='dowitme';
   const {mountDashboard}=await import('./dashboard.ts');
   refreshArchive=await mountDashboard(root,{actor,importFile:pickImport,languagePicker,wireLanguage});
 }
@@ -60,12 +60,12 @@ const roleName=(role:string)=>ot(role==='owner'?'Owner':role==='editor'?'Editor'
 async function openWorkbook(id:string){
   const snapshot=await api<Snapshot<OfficeDocument>>('/api/workbooks/'+encodeURIComponent(id));
   controller=new WorkbookController(snapshot);controller.summaryFor=patches=>ot(patches.every(p=>['setCanvasCells','setCells','setOverrides'].includes(p.op))?'Changes to cells':'File updated');
-  root.innerHTML=`<header class="office-header office-editor-header"><a class="office-back" href="/" title="${escape(ot('Files'))}">${icon('back')}${mark}</a><span id="office-save-status" class="office-save-status" role="status"></span><nav class="office-actions" aria-label="bento/office">${button('changes','history',ot('Changes'))}${button('sharing','share',ot('Sharing'))}${button('agents','agent',ot('Agents'))}${button('export','download',ot('Export HTML'))}</nav></header>
+  root.innerHTML=`<header class="office-header office-editor-header"><a class="office-back" href="/" title="${escape(ot('Files'))}">${icon('back')}${mark}</a><span id="office-save-status" class="office-save-status" role="status"></span><nav class="office-actions" aria-label="dowitme">${button('changes','history',ot('Changes'))}${button('sharing','share',ot('Sharing'))}${button('agents','agent',ot('Agents'))}${button('export','download',ot('Export HTML'))}</nav></header>
     <div id="office-problem" class="office-problem" hidden><p id="office-notice" role="alert"></p><div class="office-actions">${button('retry','check',ot('Retry save'))}${button('draft','download',ot('Download your draft'))}${button('reload','history',ot('Reload saved version'))}</div></div><aside id="office-panel" class="office-panel" hidden></aside>`;
   document.body.classList.add('office-editing');editor.hidden=false;
   controller.onState=()=>{
     controller!.notifyEditor();
-    document.title=(controller!.store?.doc.title??controller!.confirmed.title)+' — bento/office';
+    document.title=(controller!.store?.doc.title??controller!.confirmed.title)+' — dowitme';
     const status=document.getElementById('office-save-status')!;
     status.textContent=controller!.error?ot('Not saved'):controller!.pending?ot('Saving to workspace…'):controller!.readOnly?roleName('viewer'):ot('Saved to workspace');
     status.classList.toggle('is-pending',controller!.pending);
@@ -134,7 +134,7 @@ async function renderPanel(name:string){
       body.querySelectorAll<HTMLButtonElement>('[data-agent]').forEach(el=>el.onclick=()=>busy(el,async()=>{await api(controller!.root+'/agents/'+el.dataset.agent,'DELETE');await renderPanel('agents');}));
       body.querySelector('form')?.addEventListener('submit',event=>{event.preventDefault();const form=event.target as HTMLFormElement,data=new FormData(form);busy(form.querySelector('button')!,async()=>{const result=await api(controller!.root+'/agents','POST',{name:data.get('name'),permission:data.get('permission'),expiresDays:Number(data.get('days'))});form.hidden=true;const key=document.getElementById('office-new-key')!;key.innerHTML=`<p>${escape(ot('Copy this key now. It is shown only once.'))}</p><textarea readonly aria-label="Bearer token"></textarea>`;key.querySelector('textarea')!.value=result.token;});});
     }else {
-      body.innerHTML=`<p>${escape(ot('Documents, slides and spreadsheets. Shared with people and agents.'))}</p><label>${escape(t('Language'))}${languagePicker()}</label><p>bento/office · MIT</p><a href="https://github.com/davide-relaunchlab/bento" target="_blank" rel="noopener noreferrer">${escape(ot('Source code'))}</a>`;wireLanguage();
+      body.innerHTML=`<p>${escape(ot('Documents, slides and spreadsheets. Shared with people and agents.'))}</p><label>${escape(t('Language'))}${languagePicker()}</label><p>dowitme · MIT</p><p>${escape(ot('Based on'))} <a href="https://github.com/nyblnet/bento" target="_blank" rel="noopener noreferrer">bento</a> · © 2026 The Bento authors</p><a href="https://github.com/davide-relaunchlab/bento" target="_blank" rel="noopener noreferrer">${escape(ot('Source code'))}</a>`;wireLanguage();
     }
   }catch(error){if(generation===panelGeneration)body.textContent=error instanceof Error?error.message:String(error);}
 }
@@ -183,7 +183,7 @@ async function importFile(file:File){
   }else if(/\.(csv|tsv)$/i.test(file.name)){
     const {importDelimited}=await import('../../dash/src/import.ts');const result=importDelimited(await file.text(),{name:doc.title,sheetId:'sheet-1',source:file.name,at:new Date().toISOString()});(doc as DashDoc).sheets=[result.sheet];
   }else{
-    const html=await file.text();const raw=/<script\b[^>]*\bid=["']bento-doc["'][^>]*>([\s\S]*?)<\/script\s*>/i.exec(html)?.[1];if(!raw)throw new Error(ot('This file does not contain a bento workbook.'));
+    const html=await file.text();const raw=/<script\b[^>]*\bid=["']bento-doc["'][^>]*>([\s\S]*?)<\/script\s*>/i.exec(html)?.[1];if(!raw)throw new Error(ot('This file does not contain a dowitme workbook.'));
     const parsed=JSON.parse(raw);if(!parsed.docId)throw new Error(ot('This file cannot be edited in this workspace.'));
     const {readonly:_,template:__,collab:___,blobs:____,...content}=await exportContent(parsed);doc=content as OfficeDocument;
   }

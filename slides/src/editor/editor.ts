@@ -273,8 +273,8 @@ export class Editor {
       `<rect x="5" y="5" width="7" height="22" rx="2.5" fill="#5E7699"/>` +
       `<rect x="14" y="5" width="13" height="10" rx="2.5" fill="#FF9E8A"/>` +
       `<rect x="14" y="17" width="13" height="10" rx="2.5" fill="#F0EBE0"/>` +
-      `</svg> <b>bento<span style="color:#FF9E8A">/</span>slides</b>`
-    logo.title = t('About bento/slides — version, updates, licenses')
+      `</svg> <b>dowitme<span style="color:#FF9E8A">/</span>slides</b>`
+    logo.title = t('About bento/slides — version, updates, licenses').replace('bento/slides', 'dowitme · slides')
     logo.style.cursor = 'pointer'
     logo.addEventListener('click', () => this.openAbout())
     const title = document.createElement('input')

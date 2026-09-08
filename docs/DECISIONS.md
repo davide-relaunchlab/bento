@@ -14,6 +14,10 @@ Decision. Why. Pointers.
 
 ---
 
+## 2026-09-08 — dowitme is the office suite display name
+
+The maintainer selected `dowitme` for the fork’s user-facing interface, superseding the upstream bento naming rule for this suite. Keep bento attribution and MIT notices in credits. Document formats, script IDs, storage keys, API compatibility and upstream URLs remain unchanged.
+
 ## 2026-08-19 — Cross-app embedding: static render + source, never a second renderer
 
 **Decision.** One block/element shape, `bento/embed`, shared by every app in both

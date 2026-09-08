@@ -16,6 +16,7 @@ const root=document.getElementById('office-root')!;
 const editor=document.getElementById('app')!;
 let controller:WorkbookController|undefined;
 let currentPanel:string|undefined;
+let refreshArchive:(()=>Promise<void>)|undefined;
 let panelGeneration=0;
 let globalNotice='';
 let webMCP={available:false,dispose:()=>{}};
@@ -42,7 +43,7 @@ async function start(){
     actor=(await api('/api/session')).actor;
     const id=new URL(location.href).searchParams.get('workbook');
     if(id)await openWorkbook(id);else await archive();
-    webMCP=registerWebMCP(async()=>{await controller?.refresh();if(currentPanel)await renderPanel(currentPanel);},async()=>{if(controller?.pending)await controller.flush();});
+    webMCP=registerWebMCP(async()=>{await controller?.refresh();await refreshArchive?.();if(currentPanel)await renderPanel(currentPanel);},async()=>{if(controller?.pending)await controller.flush();});
   }catch(error){
     if(error instanceof HttpError&&error.status===401){
       root.innerHTML=`<header class="office-header">${mark}${languagePicker()}</header><main class="office-welcome"><div class="office-file-mark">${icon('book')}</div><h1>${escape(ot('Sign in to your workspace'))}</h1><p>${escape(ot('Documents, slides and spreadsheets. Shared with people and agents.'))}</p><a class="office-button office-primary" href="${escape(chatGPTSignInPath(location.pathname+location.search))}">${escape(ot('Continue with ChatGPT'))}</a></main>`;wireLanguage();
@@ -51,17 +52,8 @@ async function start(){
 }
 async function archive(){
   document.title='bento/office';
-  root.innerHTML=`<header class="office-header">${mark}<span class="office-account">${escape(actor.name)}</span>${languagePicker()}</header>
-    <main class="office-library"><div class="office-library-heading"><div><h1>${escape(ot('Files'))}</h1><p>${escape(ot('Your shared workspace'))}</p></div><div class="office-actions">${button('import','upload',ot('Import file'))}${button('new','plus',ot('Create file'),'office-primary')}</div></div>
-    <form id="office-create" class="office-inline-form" hidden><label for="office-format">${escape(ot('File type'))}</label><select id="office-format"><option value="bento/dash">${escape(ot('Spreadsheet'))}</option><option value="bento/type">${escape(ot('Document'))}</option><option value="bento/slides">${escape(ot('Presentation'))}</option></select><label for="office-name">${escape(t('Name'))}</label><input id="office-name" required maxlength="300" autocomplete="off"><button class="office-button office-primary" type="submit">${escape(ot('Create'))}</button></form>
-    <p id="office-notice" class="office-notice" role="alert" hidden></p><div id="office-files" class="office-files" aria-live="polite"></div></main>`;
-  wireLanguage();
-  bind('new',()=>{const form=document.getElementById('office-create')!;form.hidden=false;document.getElementById('office-name')!.focus();});
-  document.getElementById('office-create')!.addEventListener('submit',event=>{event.preventDefault();const submit=document.querySelector<HTMLButtonElement>('#office-create button')!;busy(submit,async()=>{const title=(document.getElementById('office-name') as HTMLInputElement).value.trim();const workbook=await api('/api/workbooks','POST',{title,format:(document.getElementById('office-format') as HTMLSelectElement).value});location.href='/?workbook='+encodeURIComponent(workbook.id);});});
-  bind('import',()=>pickImport());
-  const {workbooks}=await api('/api/workbooks'),files=document.getElementById('office-files')!;
-  files.innerHTML=workbooks.length?workbooks.map((w:any)=>`<a class="office-file" href="/?workbook=${encodeURIComponent(w.id)}"><span class="office-file-icon">${icon(w.format==='bento/type'?'text':w.format==='bento/slides'?'slide':'book')}</span><span class="office-file-title">${escape(w.title)}<small>${escape(formatName(w.format))}</small></span><span class="office-file-role">${escape(roleName(w.role))}</span><time>${escape(new Date(w.updatedAt).toLocaleDateString(locale()))}</time></a>`).join(''):
-    `<div class="office-empty"><span class="office-file-mark">${icon('book')}</span><h2>${escape(ot('No files yet'))}</h2><p>${escape(ot('Create a document, presentation or spreadsheet, or import a bento HTML file.'))}</p></div>`;
+  const {mountDashboard}=await import('./dashboard.ts');
+  refreshArchive=await mountDashboard(root,{actor,importFile:pickImport,languagePicker,wireLanguage});
 }
 const formatName=(format:string)=>ot(format==='bento/type'?'Document':format==='bento/slides'?'Presentation':'Spreadsheet');
 const roleName=(role:string)=>ot(role==='owner'?'Owner':role==='editor'?'Editor':'Viewer');
@@ -132,7 +124,7 @@ async function renderPanel(name:string){
     }else if(name==='sharing') {
       const result=await api(controller.root+'/members');if(generation!==panelGeneration)return;
       const owner=controller.confirmed.role==='owner';
-      body.innerHTML=`<p>${escape(ot('Share this link with the people you grant access to. Access to the site is managed separately.'))}</p>${button('copy-link','share',ot('Copy workbook link'))}<div class="office-members">${result.members.map((m:any)=>`<div class="office-member"><span><strong>${escape(m.display_name)}</strong><small>${escape(roleName(m.role))}</small></span>${owner&&m.role!=='owner'?`<button class="office-text-button" data-revoke="${escape(m.id)}">${escape(ot('Revoke'))}</button>`:''}</div>`).join('')}</div>${owner?`<form id="office-share-form"><label>${escape(ot('Email'))}<input name="email" type="email" required autocomplete="email"></label><label>${escape(ot('Permissions'))}<select name="role"><option value="editor">${escape(ot('Editor'))}</option><option value="viewer">${escape(ot('Viewer'))}</option></select></label><button class="office-button office-primary">${escape(ot('Grant access'))}</button></form>`:''}`;
+      body.innerHTML=`<p>${escape(ot('Share this link with the people you grant access to. Access to the site is managed separately.'))}</p>${button('copy-link','share',ot('Copy workbook link'))}<div class="office-members">${result.members.map((m:any)=>`<div class="office-member"><span><strong>${escape(m.display_name)}</strong><small>${escape(roleName(m.role))}${m.inherited?' · '+escape(ot('From folder'))+' '+escape(m.folder_name):''}</small></span>${owner&&m.role!=='owner'&&!m.inherited?`<button class="office-text-button" data-revoke="${escape(m.id)}">${escape(ot('Revoke'))}</button>`:''}</div>`).join('')}</div>${owner?`<form id="office-share-form"><label>${escape(ot('Email'))}<input name="email" type="email" required autocomplete="email"></label><label>${escape(ot('Permissions'))}<select name="role"><option value="editor">${escape(ot('Editor'))}</option><option value="viewer">${escape(ot('Viewer'))}</option></select></label><button class="office-button office-primary">${escape(ot('Grant access'))}</button></form>`:''}`;
       bind('copy-link',()=>void navigator.clipboard.writeText(location.href).then(()=>{document.querySelector('[data-office="copy-link"] span')!.textContent=t('Copied');}).catch(notice));
       body.querySelectorAll<HTMLButtonElement>('[data-revoke]').forEach(el=>el.onclick=()=>busy(el,async()=>{await api(controller!.root+'/members/'+el.dataset.revoke,'DELETE');await renderPanel('sharing');}));
       body.querySelector('form')?.addEventListener('submit',event=>{event.preventDefault();const form=event.target as HTMLFormElement,data=new FormData(form);busy(form.querySelector('button')!,async()=>{await api(controller!.root+'/members','POST',{email:data.get('email'),role:data.get('role')});await renderPanel('sharing');});});

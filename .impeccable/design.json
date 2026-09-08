@@ -1,0 +1,323 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-08T11:58:13.885563+00:00",
+  "title": "Design System: bento/office dashboard",
+  "extensions": {
+    "colorMeta": {
+      "home-bg": {
+        "role": "neutral",
+        "displayName": "home-bg",
+        "tonalRamp": [
+          "oklch(15% 0.00541 274.97)",
+          "oklch(26% 0.00541 274.97)",
+          "oklch(38% 0.00541 274.97)",
+          "oklch(49% 0.00541 274.97)",
+          "oklch(61% 0.00541 274.97)",
+          "oklch(72% 0.00541 274.97)",
+          "oklch(84% 0.00541 274.97)",
+          "oklch(95% 0.00541 274.97)"
+        ]
+      },
+      "home-surface": {
+        "role": "neutral",
+        "displayName": "home-surface",
+        "tonalRamp": [
+          "oklch(15% 0.00000 89.88)",
+          "oklch(26% 0.00000 89.88)",
+          "oklch(38% 0.00000 89.88)",
+          "oklch(49% 0.00000 89.88)",
+          "oklch(61% 0.00000 89.88)",
+          "oklch(72% 0.00000 89.88)",
+          "oklch(84% 0.00000 89.88)",
+          "oklch(95% 0.00000 89.88)"
+        ]
+      },
+      "home-ink": {
+        "role": "neutral",
+        "displayName": "home-ink",
+        "tonalRamp": [
+          "oklch(15% 0.04875 264.07)",
+          "oklch(26% 0.04875 264.07)",
+          "oklch(38% 0.04875 264.07)",
+          "oklch(49% 0.04875 264.07)",
+          "oklch(61% 0.04875 264.07)",
+          "oklch(72% 0.04875 264.07)",
+          "oklch(84% 0.04875 264.07)",
+          "oklch(95% 0.04875 264.07)"
+        ]
+      },
+      "home-muted": {
+        "role": "neutral",
+        "displayName": "home-muted",
+        "tonalRamp": [
+          "oklch(15% 0.04173 264.88)",
+          "oklch(26% 0.04173 264.88)",
+          "oklch(38% 0.04173 264.88)",
+          "oklch(49% 0.04173 264.88)",
+          "oklch(61% 0.04173 264.88)",
+          "oklch(72% 0.04173 264.88)",
+          "oklch(84% 0.04173 264.88)",
+          "oklch(95% 0.04173 264.88)"
+        ]
+      },
+      "home-line": {
+        "role": "neutral",
+        "displayName": "home-line",
+        "tonalRamp": [
+          "oklch(15% 0.01331 262.38)",
+          "oklch(26% 0.01331 262.38)",
+          "oklch(38% 0.01331 262.38)",
+          "oklch(49% 0.01331 262.38)",
+          "oklch(61% 0.01331 262.38)",
+          "oklch(72% 0.01331 262.38)",
+          "oklch(84% 0.01331 262.38)",
+          "oklch(95% 0.01331 262.38)"
+        ]
+      },
+      "home-blue": {
+        "role": "primary",
+        "displayName": "home-blue",
+        "tonalRamp": [
+          "oklch(15% 0.18864 265.09)",
+          "oklch(26% 0.18864 265.09)",
+          "oklch(38% 0.18864 265.09)",
+          "oklch(49% 0.18864 265.09)",
+          "oklch(61% 0.18864 265.09)",
+          "oklch(72% 0.18864 265.09)",
+          "oklch(84% 0.18864 265.09)",
+          "oklch(95% 0.18864 265.09)"
+        ]
+      },
+      "home-blue-bg": {
+        "role": "primary",
+        "displayName": "home-blue-bg",
+        "tonalRamp": [
+          "oklch(15% 0.01824 269.09)",
+          "oklch(26% 0.01824 269.09)",
+          "oklch(38% 0.01824 269.09)",
+          "oklch(49% 0.01824 269.09)",
+          "oklch(61% 0.01824 269.09)",
+          "oklch(72% 0.01824 269.09)",
+          "oklch(84% 0.01824 269.09)",
+          "oklch(95% 0.01824 269.09)"
+        ]
+      },
+      "home-green": {
+        "role": "secondary",
+        "displayName": "home-green",
+        "tonalRamp": [
+          "oklch(15% 0.09696 165.00)",
+          "oklch(26% 0.09696 165.00)",
+          "oklch(38% 0.09696 165.00)",
+          "oklch(49% 0.09696 165.00)",
+          "oklch(61% 0.09696 165.00)",
+          "oklch(72% 0.09696 165.00)",
+          "oklch(84% 0.09696 165.00)",
+          "oklch(95% 0.09696 165.00)"
+        ]
+      },
+      "home-green-bg": {
+        "role": "secondary",
+        "displayName": "home-green-bg",
+        "tonalRamp": [
+          "oklch(15% 0.01653 162.75)",
+          "oklch(26% 0.01653 162.75)",
+          "oklch(38% 0.01653 162.75)",
+          "oklch(49% 0.01653 162.75)",
+          "oklch(61% 0.01653 162.75)",
+          "oklch(72% 0.01653 162.75)",
+          "oklch(84% 0.01653 162.75)",
+          "oklch(95% 0.01653 162.75)"
+        ]
+      },
+      "home-orange": {
+        "role": "tertiary",
+        "displayName": "home-orange",
+        "tonalRamp": [
+          "oklch(15% 0.14541 43.14)",
+          "oklch(26% 0.14541 43.14)",
+          "oklch(38% 0.14541 43.14)",
+          "oklch(49% 0.14541 43.14)",
+          "oklch(61% 0.14541 43.14)",
+          "oklch(72% 0.14541 43.14)",
+          "oklch(84% 0.14541 43.14)",
+          "oklch(95% 0.14541 43.14)"
+        ]
+      },
+      "home-orange-bg": {
+        "role": "tertiary",
+        "displayName": "home-orange-bg",
+        "tonalRamp": [
+          "oklch(15% 0.01849 57.22)",
+          "oklch(26% 0.01849 57.22)",
+          "oklch(38% 0.01849 57.22)",
+          "oklch(49% 0.01849 57.22)",
+          "oklch(61% 0.01849 57.22)",
+          "oklch(72% 0.01849 57.22)",
+          "oklch(84% 0.01849 57.22)",
+          "oklch(95% 0.01849 57.22)"
+        ]
+      },
+      "home-focus": {
+        "role": "primary",
+        "displayName": "home-focus",
+        "tonalRamp": [
+          "oklch(15% 0.19441 265.99)",
+          "oklch(26% 0.19441 265.99)",
+          "oklch(38% 0.19441 265.99)",
+          "oklch(49% 0.19441 265.99)",
+          "oklch(61% 0.19441 265.99)",
+          "oklch(72% 0.19441 265.99)",
+          "oklch(84% 0.19441 265.99)",
+          "oklch(95% 0.19441 265.99)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Titolo pagina",
+        "purpose": "Dashboard; scala responsive locale."
+      },
+      "body": {
+        "displayName": "Prosa introduttiva",
+        "purpose": "Non costituisce uno stile body universale."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dialog",
+        "value": "0 22px 90px #16213940",
+        "purpose": "Unica ombra strutturale della dashboard."
+      }
+    ],
+    "motion": [
+      {
+        "name": "duration",
+        "value": ".18s",
+        "purpose": "Schede di creazione e ingresso dialoghi, soltanto senza preferenza di movimento ridotto."
+      },
+      {
+        "name": "transform-ease",
+        "value": "cubic-bezier(.16,1,.3,1)",
+        "purpose": "Trasformazioni della creazione e del dialogo."
+      },
+      {
+        "name": "color-ease",
+        "value": "ease",
+        "purpose": "Transizioni di fondo e bordo delle schede di creazione."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-min",
+        "value": "1500px"
+      },
+      {
+        "name": "compact-max",
+        "value": "1180px"
+      },
+      {
+        "name": "mobile-max",
+        "value": "700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Conferma primaria",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Conferma nei form della dashboard.",
+      "html": "<button class=\"ds-button-primary\">Crea</button>",
+      "css": ".ds-button-primary{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;border:0;border-radius:8px;background:var(--home-blue,#305bd1);color:white;padding:11px 18px;font-size:12px;font-weight:700;cursor:pointer}.ds-button-primary:hover{background:#244bad}.ds-button-primary:disabled{opacity:.5;cursor:not-allowed}.ds-button-primary:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+    },
+    {
+      "name": "Azione testuale",
+      "kind": "button",
+      "refersTo": "text-action",
+      "description": "Azione secondaria di sezione.",
+      "html": "<button class=\"ds-text-action\">Nuova cartella</button>",
+      "css": ".ds-text-action{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:transparent;padding:8px 6px;color:var(--home-muted,#65718a);font-size:11px;font-weight:600;border-radius:6px;white-space:nowrap;cursor:pointer}.ds-text-action:hover{color:var(--home-blue,#305bd1);background:var(--home-blue-bg,#edf2ff)}.ds-text-action:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+    },
+    {
+      "name": "Azione icona",
+      "kind": "button",
+      "refersTo": "icon-action",
+      "description": "Controllo compatto con nome accessibile.",
+      "html": "<button class=\"ds-icon-action\" aria-label=\"Chiudi\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 6 12 12M6 18 18 6\"/></svg></button>",
+      "css": ".ds-icon-action{display:inline-grid;place-items:center;width:32px;height:32px;padding:6px;border:0;border-radius:7px;background:transparent;color:var(--home-muted,#65718a);cursor:pointer}.ds-icon-action svg{width:17px;height:17px}.ds-icon-action:hover{background:#e6ecf8;color:var(--home-blue,#305bd1)}.ds-icon-action:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+    },
+    {
+      "name": "Campo del modulo",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo di denominazione; il sorgente non definisce uno stato hover dedicato.",
+      "html": "<input class=\"ds-input\" aria-label=\"Nome cartella\" placeholder=\"Nome cartella\">",
+      "css": ".ds-input{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;border:1px solid var(--home-line,#e3e8f1);background:white;border-radius:7px;color:var(--home-ink,#202c45);padding:10px 12px;font-size:12px;caret-color:var(--home-blue,#305bd1)}.ds-input:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+    },
+    {
+      "name": "Navigazione selezionata",
+      "kind": "nav",
+      "refersTo": "navigation-active",
+      "description": "Voce attiva; il suo hover mantiene il tono selezionato.",
+      "html": "<nav aria-label=\"Spazio di lavoro\"><button class=\"ds-navigation-active\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1ZM9 21v-8h6v8\"/></svg>I miei file</button></nav>",
+      "css": ".ds-navigation-active{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:0;border-radius:9px;background:var(--home-blue-bg,#edf2ff);color:var(--home-blue,#305bd1);text-align:left;font-size:12px;font-weight:600;cursor:pointer}.ds-navigation-active svg{width:19px;height:19px;flex:none}.ds-navigation-active:hover{background:var(--home-blue-bg,#edf2ff);color:var(--home-blue,#305bd1)}.ds-navigation-active:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+    },
+    {
+      "name": "Filtro di formato",
+      "kind": "chip",
+      "refersTo": "filter",
+      "description": "Filtro selezionato; nessun hover dedicato nel sorgente.",
+      "html": "<button class=\"ds-filter\" aria-pressed=\"true\"><i></i>Fogli di calcolo</button>",
+      "css": ".ds-filter{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;gap:6px;border:0;border-radius:7px;background:none;color:var(--home-muted,#65718a);padding:8px 10px;font-size:11px;font-weight:600;cursor:pointer}.ds-filter[aria-pressed=true]{background:#e7edf9;color:#2b4a8d}.ds-filter i{width:6px;height:6px;border-radius:50%;background:var(--home-green,#167354)}.ds-filter:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+    },
+    {
+      "name": "Cartella",
+      "kind": "card",
+      "refersTo": "folder",
+      "description": "Cartella compatta; dati solo illustrativi.",
+      "html": "<button class=\"ds-folder\"><svg viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\"/></svg><span><strong>Progetto</strong><small>3 file</small></span></button>",
+      "css": ".ds-folder{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;gap:13px;min-width:0;padding:17px 16px;border:1px solid var(--home-line,#e3e8f1);border-radius:12px;background:var(--home-surface,#fff);color:var(--home-ink,#202c45);text-align:left;cursor:pointer}.ds-folder:hover{border-color:#aebbd3;background:#fcfdff}.ds-folder svg{width:27px;height:27px;color:#a57736;fill:#fff0d8;flex:none}.ds-folder span{min-width:0}.ds-folder strong{font-size:12px;display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.ds-folder small{display:block;font-size:10px;color:var(--home-muted,#65718a);margin-top:5px}.ds-folder:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+    },
+    {
+      "name": "Creazione foglio",
+      "kind": "custom",
+      "refersTo": "create-spreadsheet",
+      "description": "Esempio desktop della famiglia di creazione; SVG estratto dal sorgente, testo dimostrativo non collegato ai cataloghi.",
+      "html": "<button class=\"ds-create-spreadsheet\"><svg class=\"ds-paper\" viewBox=\"0 0 48 56\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path fill=\"white\" stroke=\"none\" d=\"M8 2h23l11 11v39a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z\"/><path fill=\"currentColor\" fill-opacity=\".14\" stroke=\"none\" d=\"M31 2v9a2 2 0 0 0 2 2h9\"/><rect x=\"14\" y=\"24\" width=\"20\" height=\"18\" rx=\"1\"/><path d=\"M14 30h20M14 36h20M21 24v18M27 24v18\"/></svg><span><strong>Nuovo foglio</strong><small>Turn numbers into answers.</small></span><span class=\"ds-plus\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg></span></button>",
+      "css": ".ds-create-spreadsheet{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;position:relative;text-align:left;display:flex;align-items:center;gap:17px;padding:25px 22px;min-height:132px;border:1px solid transparent;border-radius:14px;overflow:hidden;background:var(--home-green-bg,#eaf7f0);color:var(--home-green,#167354);cursor:pointer}.ds-create-spreadsheet:hover{border-color:var(--home-green,#167354)}.ds-create-spreadsheet .ds-paper{width:51px;height:60px;flex:none}.ds-create-spreadsheet strong{font-size:15px;line-height:1.5;display:block;font-weight:750}.ds-create-spreadsheet small{display:block;font-size:10px;line-height:1.6;margin-top:5px;opacity:.95}.ds-create-spreadsheet .ds-plus{position:absolute;right:14px;top:12px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#ffffffa8}.ds-create-spreadsheet .ds-plus svg{width:14px;height:14px}.ds-create-spreadsheet:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:no-preference){.ds-create-spreadsheet{transition:background-color .18s ease,border-color .18s ease,transform .18s cubic-bezier(.16,1,.3,1)}.ds-create-spreadsheet:not(:disabled):hover{transform:translateY(-3px)}}.ds-create-spreadsheet:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Il tavolo di lavoro personale",
+    "overview": "Il tavolo di lavoro personale, come definito dal contratto della dashboard: contenuto centrale, comandi leggibili e archivio compatto. La superficie implementata è chiara e fredda, con inchiostro blu notte e Manrope; il contratto della dashboard è allineato a questo fondo freddo.\n\nQuesto documento descrive soltanto la dashboard bento/office, inclusi i suoi moduli e dialoghi. Non prescrive il sistema degli editor dash, type o slides e non introduce un nuovo marchio definitivo.",
+    "keyCharacteristics": [
+      "Tre accenti semantici distinguono i formati dei file.",
+      "Superfici prevalentemente piatte, delimitate da tono e bordi sottili.",
+      "Titoli compatti e metadati subordinati, con navigazione adattata alla larghezza."
+    ],
+    "rules": [
+      {
+        "name": "The File Identity Rule",
+        "body": "Il colore di formato resta coerente tra creazione, icona del file e punto del filtro.",
+        "section": "colors"
+      },
+      {
+        "name": "The Dialog Depth Rule",
+        "body": "Il dialogo introduce profondità per separare un’azione contestuale dall’archivio sottostante.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do mantenere la corrispondenza documento/blu, foglio/verde, presentazione/arancio insieme a icona e testo.",
+      "Do mantenere focus visibile e stati disabled dei controlli.",
+      "Do adattare la densità con i breakpoint esistenti e conservare titolo e azioni dei file su mobile.",
+      "Do usare nomenclatura bento/ in minuscolo e cataloghi di traduzione per la UI."
+    ],
+    "donts": [
+      "Don’t trasferire automaticamente questi token agli editor.",
+      "Don’t aggiungere ombre alle superfici ordinarie della dashboard: il rilievo strutturale appartiene ai dialoghi.",
+      "Don’t trasformare gli esempi statici del sidecar in prova di comportamento o verifica visiva."
+    ]
+  }
+}

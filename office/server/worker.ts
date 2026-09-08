@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { OfficeError, MAX_DOCUMENT_BYTES, readRange } from '../shared/changes.ts';
 import { identify } from './access.ts';
 import { Storage, type Env } from './storage.ts';
+import {Folders,folderAccess} from './folders.ts';
 import { Office } from './service.ts';
 import { invokeTool } from './tools.ts';
 import { mcpFetch } from './mcp.ts';
@@ -43,10 +44,22 @@ export async function apiFetch(request:Request,env:Env):Promise<Response> {
       const toolOffice=actor.kind==='person'?new Office(db,{...actor,kind:'browser_agent',name:actor.name+' · WebMCP'}):office;
       return json(await invokeTool(toolOffice,path[2],await body(request,z.unknown())));
     }
+    if(path[0]==='api'&&path[1]==='folders'){
+      const folders=new Folders(db,actor),fid=path[2];
+      const name=z.object({name:z.string().trim().min(1).max(120)}).strict();
+      if(path.length===2&&method==='GET')return json({folders:await folders.list()});
+      if(path.length===2&&method==='POST')return json(await folders.create((await body(request,name)).name),201);
+      if(path.length===3&&method==='GET')return json(await folderAccess(db,actor,fid));
+      if(path.length===3&&method==='PATCH')return json(await folders.rename(fid,(await body(request,name)).name));
+      if(path[3]==='members'&&path.length===4&&method==='GET')return json({members:await folders.members(fid)});
+      if(path[3]==='members'&&path.length===4&&method==='POST'){const v=await body(request,z.object({email:z.email().max(254).transform(v=>v.toLowerCase()),role:z.enum(['editor','viewer'])}).strict());return json(await folders.share(fid,v.email,v.role));}
+      if(path[3]==='members'&&path.length===5&&method==='DELETE')return json(await folders.unshare(fid,path[4]));
+      throw new OfficeError('not_found','Cartella non disponibile.',404);
+    }
     if(path[0]!=='api'||path[1]!=='workbooks')throw new OfficeError('not_found','Percorso non disponibile.',404);
     if(path.length===2) {
       if(method==='GET')return json({workbooks:await office.list()});
-      if(method==='POST'){const input=await body(request,z.object({title:z.string().trim().min(1).max(300),document:z.unknown().optional(),format:z.enum(['bento/dash','bento/slides','bento/type']).optional()}).strict());return json(await office.create(input.title,input.document,input.format),201);}
+      if(method==='POST'){const input=await body(request,z.object({title:z.string().trim().min(1).max(300),document:z.unknown().optional(),format:z.enum(['bento/dash','bento/slides','bento/type']).optional(),folderId:z.string().min(1).max(200).nullable().optional()}).strict());return json(await office.create(input.title,input.document,input.format,input.folderId),201);}
     }
     const id=path[2],section=path[3],item=path[4],action=path[5];
     if(!id||id.length>200)throw new OfficeError('not_found','Documento non disponibile.',404);
@@ -55,6 +68,7 @@ export async function apiFetch(request:Request,env:Env):Promise<Response> {
       if(raw!==null){const parsed=revision.safeParse(Number(raw));if(!parsed.success)throw new OfficeError('invalid_request','Versione non valida.');version=parsed.data;}
       return json(await office.get(id,version));
     }
+    if(section==='location'&&path.length===4&&method==='PATCH'){const input=await body(request,z.object({folderId:z.string().min(1).max(200).nullable()}).strict());return json(await office.move(id,input.folderId));}
     if(section==='range'&&path.length===4&&method==='GET') {const book=await office.get(id);if(book.document.format!=='bento/dash')throw new OfficeError('invalid_format','Le celle sono disponibili solo nei fogli di calcolo.',400);return json({revision:book.revision,cells:readRange(book.document,url.searchParams.get('sheet')??'',url.searchParams.get('range')??'')});}
     if(section==='changes') {
       if(path.length===4&&method==='GET'){const before=url.searchParams.get('before');return json({changes:await office.history(id,before===null?undefined:revision.parse(Number(before)))});}

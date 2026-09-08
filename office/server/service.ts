@@ -1,6 +1,7 @@
 import type { OfficeDocument } from '../shared/content.ts';
 import { applyPrepared, prepareChange, newWorkbook, validateWorkbook, digest, OfficeError, type PreparedChange } from '../shared/content.ts';
-import { authorize, accessCondition, personOnly, type Actor, type WorkbookRow } from './access.ts';
+import { authorize, workbookAccessQuery, accessCondition, personOnly, type Actor, type WorkbookRow } from './access.ts';
+import {folderAccess} from './folders.ts';
 import { Storage } from './storage.ts';
 
 export type ChangeInput = { baseRevision:number; operationId:string; summary:string; patches:unknown[] };
@@ -17,10 +18,11 @@ export class Office {
       const access=await authorize(this.db,this.actor,this.actor.token.workbook_id);
       return [{...this.metadata(access.workbook),role:access.role}];
     }
-    const rows=await this.db.all<WorkbookRow&{role:string}>('SELECT w.*,m.role FROM workbooks w JOIN members m ON m.workbook_id=w.id WHERE m.user_id=? ORDER BY w.updated_at DESC LIMIT 200',[this.actor.userId]);
+    const selection=workbookAccessQuery(this.actor.userId);
+    const rows=await this.db.all<WorkbookRow&{role:string}>(selection.sql+' ORDER BY updated_at DESC LIMIT 1000',selection.args);
     return rows.map(row=>({...this.metadata(row),role:row.role}));
   }
-  metadata(w:WorkbookRow) { return {id:w.id,docId:w.doc_id,title:w.title,format:w.format,revision:w.revision,updatedAt:w.updated_at,createdAt:w.created_at}; }
+  metadata(w:WorkbookRow) { return {id:w.id,folderId:w.folder_id??null,ownerId:w.owner_id,docId:w.doc_id,title:w.title,format:w.format,revision:w.revision,updatedAt:w.updated_at,createdAt:w.created_at}; }
   async snapshot(id:string,revision:number):Promise<OfficeDocument> {
     const row=await this.db.one<{content_key:string}>('SELECT content_key FROM changes WHERE workbook_id=? AND revision=?',[id,revision]);
     if(!row)throw new OfficeError('unknown_revision','Versione non disponibile. Rileggi il documento.',409);
@@ -31,20 +33,27 @@ export class Office {
     return {...this.metadata(w),revision:revision??w.revision,currentRevision:w.revision,role:a.role,agentPermission:a.actor.token?.permission??null,
       document:revision===undefined?await this.db.json<OfficeDocument>(w.content_key):await this.snapshot(id,revision)};
   }
-  async create(title:string,document?:unknown,format?:OfficeDocument['format']) {
+  async create(title:string,document?:unknown,format?:OfficeDocument['format'],folderId?:string|null) {
     personOnly(this.actor);
+    if(folderId)await folderAccess(this.db,this.actor,folderId,true);
     const doc=validateWorkbook(document??newWorkbook(title,format)),id=crypto.randomUUID(),now=Date.now(),changeId=crypto.randomUUID();
     if(format && doc.format!==format)throw new OfficeError('invalid_format','Il formato del documento non corrisponde al tipo richiesto.',400);
     doc.modified=new Date(now).toISOString();
     const key=await this.db.put(doc);
     try {
       await this.db.env.DB.batch([
-        this.db.statement('INSERT INTO workbooks(id,doc_id,title,format,owner_id,revision,acl_version,content_key,created_at,updated_at) VALUES(?,?,?,?,?,0,0,?,?,?)',[id,doc.docId,doc.title,doc.format,this.actor.userId,key,now,now]),
+        this.db.statement('INSERT INTO workbooks(id,doc_id,title,format,owner_id,revision,acl_version,content_key,created_at,updated_at,folder_id) VALUES(?,?,?,?,?,0,0,?,?,?,?)',[id,doc.docId,doc.title,doc.format,this.actor.userId,key,now,now,folderId??null]),
         this.db.statement('INSERT INTO members(id,workbook_id,user_id,email,display_name,role,created_at) VALUES(?,?,?,?,?,?,?)',[crypto.randomUUID(),id,this.actor.userId,this.actor.email!,this.actor.name,'owner',now]),
         this.db.statement('INSERT INTO changes(workbook_id,revision,id,operation_id,request_hash,content_key,actor_id,actor_name,actor_kind,summary,kind,created_at) VALUES(?,0,?,?,?,?,?,?,?,?,?,?)',[id,changeId,'create','create',key,this.actor.id,this.actor.name,this.actor.kind,'Crea documento','create',now]),
       ]);
     } catch(error) { await this.db.discardUnreferenced([key]);throw error; }
     return this.get(id);
+  }
+  async move(id:string,folderId:string|null){
+    personOnly(this.actor);const a=await authorize(this.db,this.actor,id,'manage'),c=accessCondition(a);
+    if(folderId)await folderAccess(this.db,this.actor,folderId,true);
+    const result=await this.db.statement(`UPDATE workbooks SET folder_id=?,acl_version=acl_version+1 WHERE ${c.sql}`,[folderId,...c.args]).run();
+    if(result.meta.changes!==1)throw conflict();return this.get(id);
   }
   async replay(id:string,operationId:string,requestHash:string) {
     const row=await this.db.one<ChangeRow>('SELECT * FROM changes WHERE workbook_id=? AND operation_id=?',[id,operationId]);
@@ -160,7 +169,9 @@ export class Office {
   }
   async members(id:string) {
     personOnly(this.actor);await authorize(this.db,this.actor,id);
-    return this.db.all('SELECT id,email,display_name,role,CASE WHEN user_id IS NULL THEN 1 ELSE 0 END AS pending FROM members WHERE workbook_id=? ORDER BY created_at',[id]);
+    const direct=await this.db.all('SELECT id,email,display_name,role,CASE WHEN user_id IS NULL THEN 1 ELSE 0 END AS pending FROM members WHERE workbook_id=? ORDER BY created_at',[id]);
+    const inherited=await this.db.all('SELECT fm.id,fm.email,fm.display_name,fm.role,1 AS inherited,f.name AS folder_name,CASE WHEN fm.user_id IS NULL THEN 1 ELSE 0 END AS pending FROM folder_members fm JOIN folders f ON f.id=fm.folder_id JOIN workbooks w ON w.folder_id=f.id WHERE w.id=?',[id]);
+    return [...direct,...inherited];
   }
   async share(id:string,email:string,role:'editor'|'viewer') {
     const access=await authorize(this.db,this.actor,id,'manage'),condition=accessCondition(access),memberId=crypto.randomUUID(),now=Date.now();

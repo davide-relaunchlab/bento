@@ -4,7 +4,7 @@ import { Storage } from './storage.ts';
 export type Role = 'owner'|'editor'|'viewer';
 export type Permission = 'read'|'propose'|'write'|'manage';
 export type Actor = { id:string; name:string; kind:'person'|'agent'|'browser_agent'; userId:string; email?:string; token?:TokenRow };
-export type WorkbookRow = { id:string; doc_id:string; title:string; format:'bento/dash'|'bento/slides'|'bento/type'; owner_id:string; revision:number; acl_version:number; content_key:string; created_at:number; updated_at:number };
+export type WorkbookRow = { id:string; doc_id:string; title:string; format:'bento/dash'|'bento/slides'|'bento/type'; owner_id:string; folder_id:string|null; revision:number; acl_version:number; content_key:string; created_at:number; updated_at:number };
 export type TokenRow = { id:string; workbook_id:string; creator_id:string; name:string; permission:'read'|'propose'|'write'; expires_at:number; revoked_at:number|null };
 export type Access = { workbook:WorkbookRow; role:Role; actor:Actor };
 export async function identify(request:Request, db:Storage):Promise<Actor> {
@@ -20,11 +20,13 @@ export async function identify(request:Request, db:Storage):Promise<Actor> {
   // An email invitation binds to the first authenticated account accepting it.
   // It cannot later migrate to another account merely sharing that email.
   await db.statement('UPDATE members SET user_id=?, display_name=? WHERE email=? AND user_id IS NULL',[user.userId,user.displayName,user.email]).run();
+  await db.statement('UPDATE folder_members SET user_id=?,display_name=? WHERE email=? AND user_id IS NULL',[user.userId,user.displayName,user.email]).run();
   return {id:user.userId,name:user.displayName,kind:'person',userId:user.userId,email:user.email};
 }
 export async function authorize(db:Storage, actor:Actor, id:string, permission:Permission='read'):Promise<Access> {
   if(actor.token && actor.token.workbook_id!==id) throw new OfficeError('not_found','Documento non disponibile.',404);
-  const row=await db.one<WorkbookRow & {role:Role}>(`SELECT w.*,m.role FROM workbooks w JOIN members m ON m.workbook_id=w.id WHERE w.id=? AND m.user_id=?`,[id,actor.userId]);
+  const selection=workbookAccessQuery(actor.userId);
+  const row=await db.one<WorkbookRow & {role:Role}>(selection.sql+' AND id=?',[...selection.args,id]);
   if(!row) throw new OfficeError('not_found','Documento non disponibile.',404);
   if(actor.token) {
     const token=await db.one<TokenRow>('SELECT * FROM agent_tokens WHERE id=? AND revoked_at IS NULL AND expires_at>?',[actor.token.id,Date.now()]);
@@ -44,3 +46,10 @@ export function accessCondition(access:Access):{sql:string;args:unknown[]} {
     args:[w.id,w.acl_version,...(token?[token.id,Date.now()]:[])]};
 }
 export function personOnly(actor:Actor):void { if(actor.kind!=='person') throw new OfficeError('forbidden','Questa operazione richiede una persona autorizzata.',403); }
+
+// One effective role, shared by list and every read/write authorization.
+export function workbookAccessQuery(userId:string){
+ const member=(role?:string)=>`EXISTS(SELECT 1 FROM members m WHERE m.workbook_id=w.id AND m.user_id=?${role?" AND m.role='"+role+"'":''})`;
+ const folder=(role?:string)=>`EXISTS(SELECT 1 FROM folder_members fm WHERE fm.folder_id=w.folder_id AND fm.user_id=?${role?" AND fm.role='"+role+"'":''})`;
+ return {sql:`SELECT * FROM (SELECT w.*,CASE WHEN w.owner_id=? THEN 'owner' WHEN ${member('editor')} OR ${folder('editor')} THEN 'editor' WHEN ${member()} OR ${folder()} THEN 'viewer' ELSE NULL END AS role FROM workbooks w) WHERE role IS NOT NULL`,args:[userId,userId,userId,userId,userId]};
+}

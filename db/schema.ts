@@ -3,6 +3,7 @@ import { sqliteTable, text, integer, primaryKey, uniqueIndex, index } from 'driz
 export const workbooks = sqliteTable('workbooks', {
   id: text('id').primaryKey(), docId: text('doc_id').notNull(), title: text('title').notNull(),
   format: text('format', { enum: ['bento/dash', 'bento/slides', 'bento/type'] }).notNull().default('bento/dash'),
+  folderId: text('folder_id').references(() => folders.id),
   ownerId: text('owner_id').notNull(), revision: integer('revision').notNull().default(0),
   aclVersion: integer('acl_version').notNull().default(0), contentKey: text('content_key').notNull(),
   createdAt: integer('created_at').notNull(), updatedAt: integer('updated_at').notNull(),
@@ -32,3 +33,10 @@ export const agentTokens = sqliteTable('agent_tokens', {
   permission: text('permission',{enum:['read','propose','write']}).notNull(), expiresAt: integer('expires_at').notNull(),
   revokedAt: integer('revoked_at'), createdAt: integer('created_at').notNull(),
 }, t=>[uniqueIndex('tokens_hash').on(t.tokenHash),index('tokens_workbook').on(t.workbookId)]);
+
+export const folders=sqliteTable('folders',{
+ id:text('id').primaryKey(),ownerId:text('owner_id').notNull(),ownerName:text('owner_name').notNull(),name:text('name').notNull(),createdAt:integer('created_at').notNull(),updatedAt:integer('updated_at').notNull(),
+},t=>[index('folders_owner').on(t.ownerId)]);
+export const folderMembers=sqliteTable('folder_members',{
+ id:text('id').primaryKey(),folderId:text('folder_id').notNull().references(()=>folders.id),userId:text('user_id'),email:text('email').notNull(),displayName:text('display_name').notNull(),role:text('role',{enum:['editor','viewer']}).notNull(),createdAt:integer('created_at').notNull(),
+},t=>[uniqueIndex('folder_members_email').on(t.folderId,t.email),index('folder_members_user').on(t.userId)]);

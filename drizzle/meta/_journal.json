@@ -15,6 +15,13 @@
       "when": 1788864310464,
       "tag": "0001_document_formats",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788867453023,
+      "tag": "0002_natural_loners",
+      "breakpoints": true
     }
   ]
 }

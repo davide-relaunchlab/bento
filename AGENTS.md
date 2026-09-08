@@ -81,9 +81,16 @@ are in `docs/DECISIONS.md` — don't reopen them.
    `scripts/build-*.mjs` tooling. Same for `dist-single/`.
 8. **No AI co-author trailers on commits** (no `Co-Authored-By: Claude` or
    similar), and no bot identities in git history.
-9. **Releases are cut locally by the maintainer only.** Never touch signing
-   keys (`~/.bento/release-key.json`), never attempt to release, publish, or
-   deploy from an agent session unless the maintainer explicitly asks.
+9. **dowitme: publication is part of authorized delivery.** The maintainer
+   has given standing authorization to publish verified fixes and requested
+   improvements to the existing dowitme Site, retaining its current audience
+   and access policy. Do not ask for deployment confirmation again for work
+   within that scope; complete validation, publish, and verify the result.
+   Respect an explicit local-only or do-not-publish request. Ask only when a
+   new action falls outside the authorized scope, such as changing the audience,
+   deleting user data, or publishing to a different Site. This authorization
+   does not cover signed standalone bento releases: those remain maintainer-only.
+   Never touch signing keys (`~/.bento/release-key.json`).
 10. **External PRs get provenance checks** before merge (`gh api users/<login>`)
    — AI-agent/bot contributions are not merged.
 11. **Verify before claiming done**: typecheck, build, and exercise the change

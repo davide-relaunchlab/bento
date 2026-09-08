@@ -26,7 +26,7 @@ Agent collaboration happens inside the document workflow: precise changes, revie
 
 [**bento by nyblnet**](https://github.com/nyblnet/bento) is both the inspiration and the concrete technical foundation of dowitme. This repository is a fork, not a from-scratch replacement.
 
-We reuse bento's native editors, structured document models, formula and chart engines, and self-contained HTML format. dowitme adds a shared web workspace, personal file organization, permission-aware persistence, and a common transaction layer for people and external agents.
+We retain bento's editing components, structured document models, formula and chart engines, and self-contained HTML format. A typed workbench interface lets dowitme compose the hosted editor controls without copying their implementations. dowitme adds a shared web workspace, personal file organization, permission-aware persistence, and a common transaction layer for people and external agents.
 
 The original bento authors' copyright, MIT license and third-party notices are preserved. The `bento/*` document formats and `#bento-doc` block remain intact for compatibility; the interface uses the dowitme identity.
 
@@ -40,15 +40,12 @@ Tools expose document structure and stable identifiers for cells, blocks, slides
 
 ## Run locally
 
-Use the Node.js version in [`.nvmrc`](.nvmrc).
+Use Node.js 24 (see [`.nvmrc`](.nvmrc)) and npm 11. All editors are npm workspaces: install once at the repository root.
 
 ```sh
 git clone https://github.com/davide-relaunchlab/dowitme.git
 cd dowitme
 npm ci
-npm --prefix dash ci
-npm --prefix type ci
-npm --prefix slides ci
 npm run build
 npm run dev
 ```

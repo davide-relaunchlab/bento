@@ -5,7 +5,7 @@
 // it is BUNDLED, not run directly, because render.ts imports './model'
 // extensionless (same as scripts/test-sanitize.ts):
 //
-//   slides/node_modules/.bin/esbuild scripts/test-clipboard.ts --bundle \
+//   node_modules/.bin/esbuild scripts/test-clipboard.ts --bundle \
 //     --platform=node --format=esm --outfile="$TMPDIR/test-clipboard.mjs" \
 //     && node "$TMPDIR/test-clipboard.mjs"
 //

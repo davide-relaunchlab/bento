@@ -469,6 +469,7 @@ function setBarFolded(next: boolean) {
 }
 
 function fitBar() {
+  if (host?.mountWorkbench) return;
   if (!bar.isConnected) return;
   bar.classList.remove(...ALL_BAR_CLASSES);
   setBarFolded(false);
@@ -1115,3 +1116,16 @@ else {
     },
   });
 }
+
+// Publish live feature controls after all feature registrations and event wiring.
+// Standalone keeps its original chrome and fit policy.
+host?.mountWorkbench?.({
+  header: bar, title: titleInput,
+  navigation: [byId('sidebar'), byId('props')],
+  tools: ['gFormat','gInsert','gReview'].map(id => document.getElementById(id)).filter((el): el is HTMLElement => !!el),
+  history: [byId('undo'), byId('redo')],
+  primary: [byId('save')],
+  actions: [byId('theme'), ...Array.from(moreMenu.children).filter((node):node is HTMLButtonElement=>node instanceof HTMLButtonElement)],
+  prepareActions: refreshMenuLabels,
+  status: [byId('status')],
+});

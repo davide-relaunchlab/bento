@@ -103,7 +103,7 @@ if (!CHROME) {
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bento-autoplay-'))
 const entry = path.join(tmp, 'probe.ts')
 fs.writeFileSync(entry, probeSource(repoFile('slides/src/render.ts'), repoFile('slides/src/model.ts')))
-execFileSync(repoFile('slides/node_modules/.bin/esbuild'), [
+execFileSync(repoFile('node_modules/.bin/esbuild'), [
   entry, '--bundle', '--format=iife', '--outfile=' + path.join(tmp, 'probe.js'),
 ], { stdio: 'pipe' })
 const bundle = fs.readFileSync(path.join(tmp, 'probe.js'), 'utf8')

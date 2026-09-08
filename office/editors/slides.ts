@@ -1,4 +1,4 @@
-import {brand} from '../client/brand.ts';
+import {workbench} from './workbench.ts';
 import '../client/brand.css';
 document.documentElement.classList.add('dw-host');
 // SPDX-License-Identifier: MIT
@@ -28,9 +28,11 @@ store.delegate = {
   undo: () => host.undo(),
   redo: () => host.redo(),
 };
-const editor = new Editor(document.getElementById('app')!,store,host);
+const editor = new Editor(document.getElementById('app')!,store,{...host,mountWorkbench:workbench('Presentation')});
 const narrow=matchMedia('(max-width: 700px)');
-narrow.addEventListener('change',()=>{if(narrow.matches){editor.closePanel('left');editor.closePanel('right');}});
+let wasNarrow=false;
+function fitPanels(){const isNarrow=innerWidth<=700;if(isNarrow&&!wasNarrow){editor.closePanel('left');editor.closePanel('right');}wasNarrow=isNarrow;}
+fitPanels();narrow.addEventListener('change',fitPanels);addEventListener('resize',fitPanels);
 host.attach({
   stateChanged: () => store.setDirty(host.pending()),
   read: () => structuredClone(store.doc),
@@ -43,5 +45,3 @@ host.attach({
   setReadOnly: value => {editor.setHostedReadOnly(value);store.setDirty(host.pending());},
   isEditing: () => editor.isEditing(),
 });
-
-const brandMark=document.querySelector('.ed-logo');if(brandMark)brandMark.innerHTML=brand;

@@ -7,7 +7,7 @@
 //   BENTO_TEST_APP=bento-slides node <bundle>
 //   BENTO_TEST_APP=bento-spaces node <bundle>
 //
-// (bundled so `fake-indexeddb` resolves from slides/node_modules, matching
+// (bundled so `fake-indexeddb` resolves from node_modules, matching
 // test-clipboard and test-validate)
 //
 // WHAT THIS PROVES. Every app used to share one IndexedDB database,

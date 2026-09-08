@@ -154,7 +154,7 @@ export async function decodeBlob(rawRoomKey: Uint8Array, blob: Uint8Array): Prom
     const plainLen = Math.min(chunkSize, total - wrote)
     const ctLen = plainLen + TAG_LEN
     if (at + IV_LEN + ctLen > blob.length) return null
-    const iv = blob.subarray(at, at + IV_LEN); at += IV_LEN
+    const iv = new Uint8Array(blob.subarray(at, at + IV_LEN)); at += IV_LEN
     const ct = blob.subarray(at, at + ctLen); at += ctLen
     try {
       const plain = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct as BufferSource))

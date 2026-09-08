@@ -250,6 +250,14 @@ export function mountPanels(host: PanelsHost): Panels {
     if (pref ?? phone) right.classList.add('dp-shut')
   }
   updateChevrons()
+  // Crossing into a narrow viewport must free the grid too, not only a
+  // narrow initial boot. Do not persist this automatic layout adjustment.
+  let wasPhone = window.innerWidth > 0 && window.innerWidth < PHONE_W
+  window.addEventListener('resize', () => {
+    const phone = window.innerWidth > 0 && window.innerWidth < PHONE_W
+    if (phone && !wasPhone) { right.classList.add('dp-shut'); updateChevrons() }
+    wasPhone = phone
+  })
 
   function panelEl(cls: string): HTMLElement {
     const el = document.createElement('aside')

@@ -26,7 +26,7 @@ import { fileURLToPath } from 'node:url'
 if (!process.env.BENTO_CONVERT_LOAD_BUNDLED) {
   const self = fileURLToPath(import.meta.url)
   const root = join(dirname(self), '..', '..')
-  const esbuild = join(root, 'slides', 'node_modules', '.bin', 'esbuild')
+  const esbuild = join(root, 'node_modules', '.bin', 'esbuild')
   const out = join(mkdtempSync(join(tmpdir(), 'convert-load-')), 'load.mjs')
   const b = spawnSync(esbuild, [self, '--bundle', '--platform=node', '--format=esm', `--outfile=${out}`],
     { stdio: 'inherit' })

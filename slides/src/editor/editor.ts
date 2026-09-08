@@ -1,3 +1,4 @@
+import type {MountWorkbench} from '../../../kernel/src/workbench.ts';
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 The Bento authors
 // Editor shell: topbar, slide sidebar, canvas, properties panel, keyboard
@@ -73,6 +74,7 @@ const SHAPE_MENU: Array<{ kind: ShapeKind; label: string; icon: string; draw?: '
 
 /** Optional service boundary; absent in self-contained standalone files. */
 export interface EditorHost {
+  mountWorkbench?:MountWorkbench;
   save(): Promise<void>
   exportHTML(): Promise<void>
   about(): void
@@ -528,6 +530,12 @@ export class Editor {
     window.addEventListener('resize', publishBarBottom)
     publishBarBottom()
 
+    this.host?.mountWorkbench?.({
+      header: bar, title,
+      navigation: [slidesB, formatB], tools: [insert], history: [undoB, redoB],
+      primary: [saveB], actions: [pdfB, langD, helpB],
+    })
+
     this.wireDrawerDismiss()
     this.restorePanelWidths()
     this.canvas = new SlideCanvas(canvasWrap, this.store)
@@ -747,6 +755,7 @@ export class Editor {
    * wordmark, then ed-bar-fold moves buttons into menus (applyPhoneChrome).
    */
   private fitTopbar() {
+    if (this.host?.mountWorkbench) return
     const bar = this.topbar
     if (!bar || !bar.isConnected) return
     const tiers = ['ed-bar-compact', 'ed-bar-tight', 'ed-bar-fold']

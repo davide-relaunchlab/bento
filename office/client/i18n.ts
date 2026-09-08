@@ -1,8 +1,14 @@
-import {locale,t as bentoText} from '../../dash/src/i18n.ts';
+import {locale,t as bentoText} from '../../kernel/src/i18n.ts';
 import {PACKED_LOCALES} from '../../dash/src/i18n/packed.ts';
 // English source keys. Every office string has a translation in each locale
 // actually shipped by dash; the check derives that list from its packed data.
 const rows:Record<string,Record<string,string>>={
+  "Tools":{"it": "Strumenti", "es": "Herramientas", "fr": "Outils", "de": "Werkzeuge", "ja": "ツール", "zh-Hans": "工具", "zh-Hant": "工具"},
+  "Insert":{"it": "Inserisci", "es": "Insertar", "fr": "Insérer", "de": "Einfügen", "ja": "挿入", "zh-Hans": "插入", "zh-Hant": "插入"},
+  "View":{"it": "Vista", "es": "Vista", "fr": "Affichage", "de": "Ansicht", "ja": "表示", "zh-Hans": "视图", "zh-Hant": "檢視"},
+  "More":{"it": "Altro", "es": "Más", "fr": "Plus", "de": "Mehr", "ja": "その他", "zh-Hans": "更多", "zh-Hant": "更多"},
+  "Close tools":{"it": "Chiudi strumenti", "es": "Cerrar herramientas", "fr": "Fermer les outils", "de": "Werkzeuge schließen", "ja": "ツールを閉じる", "zh-Hans": "关闭工具", "zh-Hant": "關閉工具"},
+
   "Personal space":{"it": "Spazio personale", "es": "Espacio personal", "fr": "Espace personnel", "de": "Persönlicher Bereich", "ja": "個人スペース", "zh-Hans": "个人空间", "zh-Hant": "個人空間"},
   "Workspace":{"it": "Spazio di lavoro", "es": "Espacio de trabajo", "fr": "Espace de travail", "de": "Arbeitsbereich", "ja": "ワークスペース", "zh-Hans": "工作区", "zh-Hant": "工作區"},
   "My files":{"it": "I miei file", "es": "Mis archivos", "fr": "Mes fichiers", "de": "Meine Dateien", "ja": "マイファイル", "zh-Hans": "我的文件", "zh-Hant": "我的檔案"},

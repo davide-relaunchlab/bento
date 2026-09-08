@@ -50,7 +50,7 @@ import './ask.css'
 import { openColumnMenu } from './filterui.ts'
 import { installSaveMenu, adoptOpenedDoc, toast } from './saveui.ts'
 import { dismissSplash, dismissSplashNow } from './splash.ts'
-import { t, i18nApi } from './i18n.ts'
+import { t, i18nApi, activateI18n } from './i18n.ts'
 import {
   parseDoc, docBytes, docBudget, rowCount, DOC_BUDGET_FSA, DOC_BUDGET_DOWNLOAD,
   type DashDoc, type ParseResult, type Column, type ColumnType, type TableSheet,
@@ -158,6 +158,8 @@ const ICON = {
 const barBtn = (act: string, icon: string, label: string, tip: string, extra = ''): string =>
   `<button class="dx-btn${extra}" data-act="${act}" title="${esc(tip)}">${icon}<span>${esc(label)}</span></button>`
 
+// A hosted suite also imports other document formats before this entry runs.
+activateI18n()
 configureApp({
   appId: 'bento-dash',
   appName: 'dowitme · sheets',
@@ -2029,6 +2031,16 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
   })
 
   // --- the scripting/agent surface
+  if (hosted?.mountWorkbench) {
+    const element = (selector: string) => app.querySelector<HTMLElement>(selector)!;
+    hosted.mountWorkbench({
+      header: element('.dx-bar'), title: titleEl,
+      navigation: [], tools: [element('.dx-insert-dd'), element('.dx-data-dd')],
+      history: [element('[data-act="undo"]'), element('[data-act="redo"]')],
+      primary: [element('[data-act="save"]')],
+      actions: [element('[data-act="settings"]'), element('[data-act="about"]')],
+    });
+  }
   hosted?.attach(store, { showingSheet: () => grid.showingId(), showSheet: (id) => grid.setSheet(id) })
   ;(window as unknown as Record<string, unknown>).bento = hosted?.api ?? {
     format: doc.format,

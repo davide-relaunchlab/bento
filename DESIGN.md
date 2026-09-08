@@ -211,3 +211,41 @@ Dialoghi nativi con larghezza `min(500px,calc(100vw - 32px))`, altezza massima 8
 - Don’t trasferire i token della chrome ai contenuti o ai temi dei documenti.
 - Don’t aggiungere ombre alle superfici ordinarie della dashboard: il rilievo strutturale appartiene ai dialoghi.
 - Don’t trasformare gli esempi statici del sidecar in prova di comportamento o verifica visiva.
+
+
+## Area editor comune
+
+Modalità Operate. La composizione ospitata separa identità del file e strumenti:
+prima riga con titolo a sinistra, salvataggio e Altro a destra; seconda riga
+con cronologia, strumenti di modifica e navigazione. Niente tipo del documento
+ripetuto accanto al titolo e niente ritorno a capo incontrollato dei comandi.
+
+Sotto 1200px gli strumenti si spostano in pannelli nativi popover, con ingressi
+etichettati Inserisci/Strumenti e Vista. Il pannello si apre in basso, ha titolo,
+chiusura da 44px, altezza massima 70dvh, scorrimento e sottomenu interni. Altro
+contiene azioni nominate; nei documenti espone direttamente revisione, firma,
+stampa e opzioni, senza un secondo Altro annidato. Escape chiude e riporta
+il focus all’ingresso. I comandi di inserimento restituiscono il contenuto.
+
+Da 1200px strumenti e navigazione sono esposti nella seconda riga. I pannelli
+secondari di Altro si aprono vicino al pulsante. La stessa istanza di ciascun
+controllo viene spostata al cambio di larghezza, conservando stato e listener.
+Il campo titolo usa 17px su desktop e 16px in modalità compatta per evitare
+lo zoom automatico durante la modifica sui browser mobili. Controlli principali
+con altezza 40–44px in modalità compatta, 36px su desktop; raggio 7px.
+
+La barra ospitata misura circa 107px in modalità compatta e 109px su desktop,
+esclusa la testata della suite. La superficie attorno alle slide è uniforme:
+la griglia decorativa non compete con la presentazione. Il documento mantiene
+i suoi colori. I pannelli usano raggio 14px, ombra prugna #100b203d a 14px/48px
+e backdrop #100b202e su mobile; animazione di entrata 160ms disabilitata con
+movimento ridotto.
+
+Verifica browser del 2026-09-08: tre editor, temi chiaro/scuro, larghezze
+320/390/768/1199/1200/1440px, orientamento largo a 768×500. Nessun overflow
+della barra; inserimento, undo/redo e chiusura dei pannelli funzionanti.
+Le otto lingue offerte sono state controllate sulle slide a 1200px. Sono prove
+in browser con viewport emulati, non certificazione su dispositivi fisici.
+
+Fonti: `office/editors/workbench.ts` e `workbench.css`; il contratto dei controlli
+vivi è `kernel/src/workbench.ts`. La composizione non modifica i formati dei file.

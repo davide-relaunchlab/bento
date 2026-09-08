@@ -34,7 +34,7 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const esbuild = join(root, 'slides/node_modules/.bin/esbuild')
+const esbuild = join(root, 'node_modules/.bin/esbuild')
 
 // The timezone lists are not decoration. A date test that only runs in one
 // timezone has not been run: Kiritimati is UTC+14 and Lord Howe is a half-hour

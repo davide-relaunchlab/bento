@@ -6394,3 +6394,13 @@ chance to run and it is cheap. Reconciliation for this cycle: 41 commits, 40
 mapped, 1 correctly absent, run by bento-team-slides.
 
 Claude-Session: https://claude.ai/code/session_01Jcfdy8A69nonyATtm8vRy8
+
+
+## 2026-09-08 — dowitme hosted workbench
+
+The maintainer chose to retain and improve the existing engines. Hosted
+editor composition belongs to dowitme through the optional WorkbenchParts
+interface. Engine controls remain live nodes, with their existing commands
+and permission state. Standalone chrome remains the default when no host
+composition is supplied. Retain the document formats and provenance;
+this is not a wholesale replacement of the editing components.

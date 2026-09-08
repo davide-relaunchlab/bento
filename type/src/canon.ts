@@ -101,7 +101,7 @@ const b64u = (buf: ArrayBuffer | Uint8Array): string => {
   for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 };
-const unb64u = (s: string): Uint8Array => {
+const unb64u = (s: string): Uint8Array<ArrayBuffer> => {
   const t = s.replace(/-/g, '+').replace(/_/g, '/');
   const bin = atob(t + '='.repeat((4 - (t.length % 4)) % 4));
   const out = new Uint8Array(bin.length);

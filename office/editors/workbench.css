@@ -1,0 +1,78 @@
+/* Suite chrome: two deliberate rows. Tools are disclosed on compact screens. */
+.dw-workbench.dw-workbench{display:flex;flex-direction:column;align-items:stretch;gap:0;height:auto;min-height:0;padding:0;overflow:visible;background:var(--surface,#fffdfb);border-bottom:1px solid var(--line,#e9e1ec);font-family:Manrope,sans-serif;color:var(--ink,#30263c);}
+.dw-workbench [hidden]{display:none!important;}
+.dw-workbench-titlebar{display:flex;align-items:center;gap:12px;padding:10px 20px 6px;min-width:0;}
+.dw-workbench-heading{flex:1;min-width:0;}
+.dw-workbench .dw-workbench-heading input{display:block;box-sizing:border-box;width:100%;max-width:660px;min-width:0;flex:none;margin:0;padding:7px 8px;border:1px solid transparent;border-radius:7px;background:transparent;color:inherit;font:700 17px/1.4 Manrope,sans-serif;letter-spacing:-.025em;text-overflow:ellipsis;}
+.dw-workbench .dw-workbench-heading input:hover{border-color:var(--line);}
+.dw-workbench-status{font-size:11px;color:var(--muted);white-space:nowrap;}
+.dw-workbench-toolbar{display:flex;align-items:center;gap:16px;padding:6px 20px 10px;min-width:0;}
+.dw-workbench-history,.dw-workbench-tools,.dw-workbench-navigation,.dw-workbench-primary{display:flex;align-items:center;gap:4px;flex:none;}
+.dw-workbench-history{padding-inline-end:12px;border-inline-end:1px solid var(--line);}
+.dw-workbench-navigation{margin-inline-start:auto;padding-inline-start:12px;border-inline-start:1px solid var(--line);}
+.dw-workbench-navigation:empty{display:none;}
+.dw-workbench-tools{flex:1;min-width:0;gap:8px;}
+.dw-workbench .ed-group,.dw-workbench .t-group{margin:0;padding:0;border:0;gap:4px;}
+.dw-workbench .ed-phone-only{display:inline-flex;}
+.dw-workbench .ed-insert{display:flex;flex-wrap:wrap;min-width:0;}
+.dw-workbench .dw-control-label{font-size:12px;}
+.dw-workbench :is(button,input):focus-visible{outline:2px solid var(--sel-ring,#71459e);outline-offset:2px;}
+.dw-workbench button{min-height:36px;}
+.dw-workbench .dw-disclosure,.dw-workbench .dw-panel-close{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:7px 10px;border:0;border-radius:7px;background:transparent;color:inherit;font:600 13px/1.4 Manrope,sans-serif;cursor:pointer;white-space:nowrap;}
+.dw-workbench .dw-disclosure:hover,.dw-workbench .dw-disclosure[aria-expanded=true],.dw-workbench .dw-panel-close:hover{background:var(--hover);}
+.dw-workbench .dw-more{min-width:36px;}
+.dw-workbench .dw-workbench-primary>button{border:1px solid var(--line-strong);border-radius:7px;padding-inline:14px;background:var(--wash);}
+.dw-workbench-primary .ed-split{display:flex;}
+.dw-tool-panel{box-sizing:border-box;position:fixed;inset:var(--dw-pop-top) auto auto var(--dw-pop-left);margin:0;width:360px;max-width:calc(100vw - 24px);max-height:min(560px,70dvh);overflow:auto;padding:16px;border:0;border-radius:14px;background:var(--surface,#fffdfb);color:var(--ink,#30263c);box-shadow:0 14px 48px #100b203d;font-family:Manrope,sans-serif;}
+.dw-tool-panel::backdrop{background:transparent;}
+.dw-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:12px;margin-bottom:8px;border-bottom:1px solid var(--line);}
+.dw-panel-heading h2{margin:0;font:700 17px/1.4 Manrope,sans-serif;letter-spacing:-.025em;}
+.dw-panel-content{display:flex;flex-direction:column;gap:6px;}
+.dw-tool-panel :is(.ed-group,.t-group,.ed-insert){display:flex;flex-wrap:wrap;gap:6px;}
+.dw-tool-panel .ed-insert{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+.dw-tool-panel .ed-insert>*,.dw-tool-panel .ed-insert>.ed-dropdown>.ed-btn{width:100%;min-width:0;}
+.dw-tool-panel :is(.ed-btn,.t-btn,.dx-btn){min-height:44px;justify-content:flex-start;gap:10px;padding:10px 12px;white-space:normal;text-align:start;}
+.dw-tool-panel :is(.ed-btn,.t-btn,.dx-btn)>span{display:inline;}
+.dw-tool-panel .t-mlbl{display:inline;}
+.dw-tool-panel .ed-phone-only{display:flex;}
+/* A widget submenu expands in its section, never outside a scrolling sheet. */
+.dw-tool-panel :is(.ed-dropdown,.t-menuwrap,.dx-dd){position:relative;display:block;}
+.dw-tool-panel :is(.ed-menu,.t-menu,.dx-menu){position:static!important;inset:auto!important;transform:none!important;min-width:0;max-width:none;max-height:none;width:100%;box-shadow:none;border:0;margin:4px 0;padding:4px;background:var(--wash);overflow:visible;}
+.dw-tool-panel .ed-dropdown.open{grid-column:1/-1;}
+.dw-tool-panel .dx-insert-dd>.dx-dd-trig{display:flex;}
+.dw-tool-panel .dx-insert-dd>.dx-menu{display:none;flex-direction:column;}
+.dw-tool-panel .dx-insert-dd.open>.dx-menu{display:flex;}
+.dw-workbench .dx-insert-dd>.dx-dd-trig{display:inline-flex;}
+.dw-workbench.dw-workbench .dx-dd>.dx-dd-trig>span{display:inline;}
+.dw-workbench .dx-insert-dd{position:relative;}
+.dw-workbench-tools .dx-insert-dd>.dx-menu{display:none;position:absolute;flex-direction:column;min-width:230px;padding:5px;background:var(--surface);border:1px solid var(--line-strong);box-shadow:var(--shadow-pop);}
+.dw-workbench-tools .dx-insert-dd.open>.dx-menu{display:flex;}
+.ed-reader .dw-workbench .ed-insert{display:none;}
+@media(max-width:1199px){
+ .dw-workbench-titlebar{padding:6px 10px 2px;gap:6px;}
+ .dw-workbench-toolbar{padding:4px 10px 6px;gap:6px;}
+ .dw-workbench .dw-workbench-heading input{font-size:16px;padding:8px 4px;}
+ .dw-workbench-status{display:none;}
+ .dw-workbench .dw-more>span{display:none;}
+ .dw-workbench .dw-workbench-history{gap:0;padding-inline-end:6px;}
+ .dw-workbench .dw-workbench-history button{width:44px;min-width:44px;min-height:44px;padding:10px;}
+ .dw-workbench-history button>span{display:none;}
+ .dw-workbench .dw-disclosure,.dw-workbench .dw-panel-close{min-height:44px;min-width:44px;}
+ .dw-workbench .dw-workbench-primary>button{min-height:40px;padding:8px 10px;}
+ .dw-tool-panel{inset:auto 8px max(8px,env(safe-area-inset-bottom)) 8px;width:auto;max-width:none;max-height:70dvh;padding:16px;}
+ .dw-tool-panel::backdrop{background:#100b202e;}
+}
+@media(prefers-reduced-motion:no-preference){.dw-tool-panel:popover-open{animation:dw-tools-in 160ms cubic-bezier(.16,1,.3,1);}@keyframes dw-tools-in{from{opacity:0;translate:0 8px;}to{opacity:1;translate:0 0;}}}
+/* A quiet surface around the slide makes the content the visual focus. */
+.dw-host .ed-canvas-wrap{background:var(--bg);}
+@media(max-width:700px){
+ .dw-host .ed-corner-br{inset-inline:12px;bottom:max(12px,env(safe-area-inset-bottom));justify-content:space-between;gap:8px;}
+ .dw-host .ed-corner-br .ed-btn{min-height:40px;}
+}
+
+.dw-workbench .dw-more svg{stroke-width:3.5;}
+
+.dw-tool-panel .dw-panel-content>button{display:flex;align-items:center;justify-content:flex-start;gap:10px;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:7px;background:transparent;color:inherit;font:inherit;text-align:start;cursor:pointer;}
+.dw-tool-panel .dw-panel-content>button:hover{background:var(--hover);}
+.dw-tool-panel .dw-panel-content>button:disabled{opacity:.45;cursor:default;}
+.dw-tool-panel .dw-panel-content>button>svg{width:18px;height:18px;flex:none;}

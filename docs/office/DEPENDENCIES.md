@@ -43,22 +43,46 @@ restano separate dai gruppi minor/patch; non è configurato alcun auto-merge.
 
 ## Separazione degli editor
 
-Questa manutenzione non trasforma gli editor ereditati in editor originali.
-Oggi il frontend importa il bootstrap di dash; documenti e presentazioni
-montano gli editor type/slides in iframe della stessa origine. La suite
-fornisce persistenza, autorizzazioni, proposte, cronologia e undo attraverso
-`office/shared/editor-host.ts` e il controller.
+Decisione confermata l’8 settembre 2026: conservare i motori esistenti e
+migliorarli quando emergono problemi verificabili. Non sostituire algoritmi
+funzionanti per cambiare provenienza al codice.
 
-La richiesta di prodotto è creare editor autonomi di dowitme. Prima di
-sostituirli va decisa la provenienza dei motori: mantenere codice derivato
-per calcolo/rendering/compatibilità, oppure sostituire anche quei motori.
-Sono due migrazioni diverse; una riorganizzazione dei percorsi o del marchio
-non soddisfa nessuna delle due.
+`kernel/src/workbench.ts` definisce la composizione opzionale della barra:
+il motore fornisce i controlli vivi, dowitme decide titolo, navigazione,
+cronologia, strumenti e azioni in `office/editors/workbench.ts` e relativo CSS.
+Non si clonano pulsanti e non si simulano clic su un’applicazione nascosta:
+listener, stato disabilitato, menu, salvataggio e scorciatoie restano collegati
+agli stessi oggetti. Gli editor standalone non forniscono questo host e
+mantengono la loro composizione originale.
 
-In entrambi i casi gli editor nuovi devono rispettare le transazioni del
-controller, i permessi server, gli ID persistenti, la preservazione dei
-campi sconosciuti e l'importazione dei documenti esistenti. Il codice derivato
-mantiene copyright e licenza. La riscrittura non deve rendere modificabile un
-file in sola lettura, perdere contenuti non supportati o aggirare le proposte
-degli agenti. Il sito attuale resta invariato fino a verifica e pubblicazione
-esplicitamente autorizzata della sostituzione.
+La suite conserva gli iframe della stessa origine per documenti e slide:
+isolano CSS e registri dei moduli. Il foglio gira nella pagina della suite.
+I pannelli e gli strumenti specifici restano componenti derivati da bento;
+questa separazione non è una riscrittura integrale dei tre editor.
+Persistenza, ruoli, proposte e cronologia appartengono al controller della
+suite, attraverso `office/shared/editor-host.ts` e `dash/src/officehost.ts`.
+
+Le traduzioni della suite usano il kernel senza registrare implicitamente
+un catalogo editor. Il foglio riattiva esplicitamente il proprio catalogo
+all’avvio dopo i caricamenti degli altri formati. Il tema si propaga tra
+frame e schede tramite l’evento storage; non modifica il contenuto dei file.
+
+ID persistenti, campi sconosciuti, formati e blocco `#bento-doc` restano
+vincoli di compatibilità. Copyright e licenza del codice derivato rimangono.
+Gli aggiornamenti upstream sono selettivi, revisionati e verificati dai
+controlli degli editor e della suite; non si copiano directory o bundle.
+
+## Verifica del passaggio alla composizione comune — 2026-09-08
+
+- Installazione pulita `npm ci`, audit senza segnalazioni, typecheck e 65 test
+  della suite, inclusi isolamento dei cataloghi e propagazione del tema.
+- Build hosted e tre build standalone; conformance gate sui file prodotti
+  e sugli HTML realmente scaricati dalla UI.
+- Rigs hosted type/slides, catalogo dash, azioni e pannelli dash, storage e temi.
+- Browser desktop 1440×960 e mobile 390×844: rinomina persistente, scrittura
+  di testo, inserimento di testo nelle slide, formula `=1+2` risultante in 3;
+  undo/redo e download HTML per tutti i tre formati. Nessun errore JavaScript
+  durante questi flussi. Barra a 390px senza overflow orizzontale.
+
+La verifica locale non equivale a pubblicazione: questo cambiamento è nella
+PR di manutenzione, non nel sito già pubblicato.

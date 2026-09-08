@@ -94,6 +94,10 @@ export function startTheme(): ResolvedTheme {
   const t = applyTheme();
   if (!started) {
     started = true;
+    // Other same-origin frames/tabs share the preference, not module state.
+    window.addEventListener('storage', event => {
+      if (event.key === KEY || event.key === null) applyTheme();
+    });
     media()?.addEventListener?.('change', () => {
       if (themeChoice() === 'auto') applyTheme('auto');
     });

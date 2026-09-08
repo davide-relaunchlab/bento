@@ -1,6 +1,6 @@
 # dowitme
 
-Spazio condiviso per fogli di calcolo, derivato da `nyblnet/bento` al commit `01000838496ec863ba1035eae12a8a4943020cdc`. La licenza MIT e i copyright upstream restano nel repository e nei file autonomi. `dash/` è l'editor effettivo: formule, grafici, dataset, import/export e patch provengono da Bento.
+Spazio condiviso per documenti, presentazioni e fogli di calcolo, derivato da `nyblnet/bento` al commit `01000838496ec863ba1035eae12a8a4943020cdc`. La licenza MIT e i copyright upstream restano nel repository e nei file autonomi. dowitme compone la barra comune degli editor attraverso `kernel/src/workbench.ts`; i componenti di modifica, i modelli e i motori esistenti vengono conservati. Le scelte di manutenzione sono documentate in [DEPENDENCIES.md](DEPENDENCIES.md).
 
 ## Sviluppo locale
 

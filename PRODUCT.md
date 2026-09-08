@@ -9,13 +9,13 @@ web
 Persone e agenti AI esterni che lavorano sugli stessi fogli di calcolo. Più persone collaborano con ruoli e permessi fin dalla prima versione.
 
 ## Product Purpose
-Una suite web generale, basata sul fork reale di nyblnet/bento. La prima versione riguarda i fogli; i documenti costituiscono l'estensione successiva, non un secondo editor da costruire in questa fase.
+Una suite web generale, basata sul fork reale di nyblnet/bento. Documenti, presentazioni e fogli condividono la stessa area di lavoro.
 
 ## Operating Context
 Uso remoto tramite Sites con ingresso pubblico autorizzato, contenuti protetti da permessi, salvataggio persistente e condivisione controllata. Agenti esterni con MCP e supporto aggiuntivo WebMCP nei browser che lo espongono. Nessuna dipendenza da una chat integrata.
 
 ## Capabilities and Constraints
-- Riutilizzare dash, modelli, formule, grafici e import/export esistenti; non riscrivere l'editor.
+- Conservare e migliorare i motori esistenti di testo, calcolo, rendering e import/export. dowitme possiede la composizione dell’area editor; i controlli funzionali vengono riutilizzati attraverso un’interfaccia esplicita, senza copiarli.
 - Suggerimenti delle funzioni digitando =, completamento da tastiera e sintassi contestuale coerente con il motore.
 - Modifiche puntuali, verificabili, attribuite, rifiutabili e reversibili. Persona e agente passano per gli stessi controlli.
 - Ruoli proprietario, editor e lettore; agenti distinti con accesso limitabile e revocabile. Le proposte possono essere sottoposte a un editor prima dell'applicazione.

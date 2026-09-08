@@ -211,3 +211,18 @@ Dialoghi nativi con larghezza `min(500px,calc(100vw - 32px))`, altezza massima 8
 - Don’t trasferire i token della chrome ai contenuti o ai temi dei documenti.
 - Don’t aggiungere ombre alle superfici ordinarie della dashboard: il rilievo strutturale appartiene ai dialoghi.
 - Don’t trasformare gli esempi statici del sidecar in prova di comportamento o verifica visiva.
+
+
+## Area editor comune
+
+Modalità Operate. L’area ospitata usa una composizione comune per documenti,
+presentazioni e fogli: tipo e titolo sulla prima riga, navigazione e
+cronologia prima degli strumenti, salvataggio e azioni a destra. Il titolo
+misura 17px su desktop e 15px su mobile; il suo campo usa raggio 7px.
+Il logo compare nella testata della suite una sola volta. Su mobile gli
+strumenti occupano una riga dedicata e i pannelli si chiudono entrando nella
+larghezza ridotta, lasciando i controlli disponibili per riaprirli.
+
+Fonti: `office/editors/workbench.ts` e `workbench.css`; i controlli sono
+forniti dai motori attraverso `kernel/src/workbench.ts`. La composizione
+non estende colori o stili al contenuto dei documenti.

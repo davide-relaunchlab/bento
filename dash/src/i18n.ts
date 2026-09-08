@@ -40,24 +40,28 @@ const CHOICES: LocaleChoice[] = [
   { code: 'de', label: 'Deutsch' },
 ]
 
-registerI18n({
-  packed: {
-    locales: PACKED_LOCALES,
-    table: PACKED,
-    // navigator.language is a full tag. Without these, a zh-TW reader falls
-    // back to English rather than to the Traditional column that is right
-    // there — the base-language fallback in the kernel only reaches 'zh'.
-    alias: {
-      zh: 'zh-Hans',
-      'zh-CN': 'zh-Hans',
-      'zh-SG': 'zh-Hans',
-      'zh-TW': 'zh-Hant',
-      'zh-HK': 'zh-Hant',
-      'zh-MO': 'zh-Hant',
+export function activateI18n():void {
+  registerI18n({
+    packed: {
+      locales: PACKED_LOCALES,
+      table: PACKED,
+      // navigator.language is a full tag. Without these, a zh-TW reader falls
+      // back to English rather than to the Traditional column that is right
+      // there — the base-language fallback in the kernel only reaches 'zh'.
+      alias: {
+        zh: 'zh-Hans',
+        'zh-CN': 'zh-Hans',
+        'zh-SG': 'zh-Hans',
+        'zh-TW': 'zh-Hant',
+        'zh-HK': 'zh-Hant',
+        'zh-MO': 'zh-Hant',
+      },
     },
-  },
-  choices: CHOICES,
-})
+    choices: CHOICES,
+  })
+
+}
+activateI18n()
 
 export const LOCALE_CHOICES = CHOICES
 

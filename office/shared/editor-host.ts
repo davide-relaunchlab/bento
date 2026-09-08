@@ -1,3 +1,4 @@
+import type {MountWorkbench} from '../../kernel/src/workbench.ts';
 import type {BentoDoc} from '../../slides/src/model.ts';
 import type {TypeDoc} from '../../type/src/model.ts';
 export type NativeDocument=BentoDoc|TypeDoc;
@@ -11,6 +12,7 @@ export interface NativeEditorAdapter {
   isEditing():boolean;
 }
 export interface NativeEditorHost {
+  mountWorkbench?:MountWorkbench;
   readonly format:'bento/slides'|'bento/type';
   readonly document:NativeDocument;
   readonly readOnly:boolean;

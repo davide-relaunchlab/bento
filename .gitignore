@@ -92,3 +92,6 @@ home/android/*/build/
 .claude/agents
 .claude/commands/team
 .office-dev/
+
+# Local browser verification output
+.playwright-cli/

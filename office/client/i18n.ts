@@ -1,4 +1,4 @@
-import {locale,t as bentoText} from '../../dash/src/i18n.ts';
+import {locale,t as bentoText} from '../../kernel/src/i18n.ts';
 import {PACKED_LOCALES} from '../../dash/src/i18n/packed.ts';
 // English source keys. Every office string has a translation in each locale
 // actually shipped by dash; the check derives that list from its packed data.

@@ -1,8 +1,10 @@
+import {startTheme} from '../../kernel/src/theme.ts';
+import {workbench} from '../editors/workbench.ts';
 import {brand,brandSymbol} from './brand.ts';
 import './brand.css';
 import '../../dash/src/styles.css';
 import './styles.css';
-import {LOCALE_CHOICES,locale,setLocale,t} from '../../dash/src/i18n.ts';
+import {activateI18n,LOCALE_CHOICES,locale,setLocale,t} from '../../dash/src/i18n.ts';
 import {ot} from './i18n.ts';
 import {api,HttpError,type Snapshot} from './api.ts';
 import {WorkbookController} from './controller.ts';
@@ -41,7 +43,9 @@ function busy(button:HTMLButtonElement,work:()=>Promise<unknown>){button.disable
 function bind(id:string,action:(event:MouseEvent)=>void){document.querySelector<HTMLButtonElement>(`[data-office="${id}"]`)?.addEventListener('click',action);}
 
 async function start(){
+  activateI18n();
   document.documentElement.lang=locale();
+  startTheme();
   root.innerHTML=`<header class="office-header">${mark}${languagePicker()}</header><main class="office-opening" role="status">${escape(ot('Loading…'))}</main>`;wireLanguage();
   try {
     actor=(await api('/api/session')).actor;
@@ -79,12 +83,11 @@ async function openWorkbook(id:string){
     const title=document.querySelector<HTMLInputElement>('.dx-title');if(title&&document.activeElement!==title)title.value=controller!.store?.doc.title??controller!.confirmed.title;
   };
   if(snapshot.document.format==='bento/dash'){
-    const host:OfficeHost={readOnly:controller.readOnly,pending:()=>controller!.pending,save:async()=>{await controller!.flush();},about:()=>void renderPanel('settings'),attach:(store,view)=>{controller!.attach(store,view);controller!.onState();},
+    const host:OfficeHost={mountWorkbench:workbench('Spreadsheet'),readOnly:controller.readOnly,pending:()=>controller!.pending,save:async()=>{await controller!.flush();},about:()=>void renderPanel('settings'),attach:(store,view)=>{controller!.attach(store,view);controller!.onState();},
       api:{get document(){return structuredClone(controller!.store?.doc??controller!.confirmed.document) as DashDoc;},get revision(){return controller!.revision;},call:callTool}};
     (window as unknown as {__BENTO_OFFICE_HOST__:OfficeHost}).__BENTO_OFFICE_HOST__=host;
     document.getElementById('bento-doc')!.textContent=JSON.stringify(snapshot.document).replace(/</g,'\\u003c');
     await import('../../dash/src/main.ts');
-    const nativeMark=document.querySelector('.dx-mark');if(nativeMark)nativeMark.innerHTML=brand;
   }else{
     const format=snapshot.document.format;
     const {configureApp}=await import('../../kernel/src/app.ts');configureApp({appId:format.replace('/','-'),appName:format,manifestUrl:''});
@@ -139,7 +142,7 @@ async function renderPanel(name:string){
       body.querySelectorAll<HTMLButtonElement>('[data-agent]').forEach(el=>el.onclick=()=>busy(el,async()=>{await api(controller!.root+'/agents/'+el.dataset.agent,'DELETE');await renderPanel('agents');}));
       body.querySelector('form')?.addEventListener('submit',event=>{event.preventDefault();const form=event.target as HTMLFormElement,data=new FormData(form);busy(form.querySelector('button')!,async()=>{const result=await api(controller!.root+'/agents','POST',{name:data.get('name'),permission:data.get('permission'),expiresDays:Number(data.get('days'))});form.hidden=true;const key=document.getElementById('office-new-key')!;key.innerHTML=`<p>${escape(ot('Copy this key now. It is shown only once.'))}</p><textarea readonly aria-label="Bearer token"></textarea>`;key.querySelector('textarea')!.value=result.token;});});
     }else {
-      body.innerHTML=`<p>${escape(ot('Documents, slides and spreadsheets. Shared with people and agents.'))}</p><label>${escape(t('Language'))}${languagePicker()}</label><p>dowitme · MIT</p><p>${escape(ot('Based on'))} <a href="https://github.com/nyblnet/bento" target="_blank" rel="noopener noreferrer">bento</a> · © 2026 The Bento authors</p><a href="https://github.com/davide-relaunchlab/bento" target="_blank" rel="noopener noreferrer">${escape(ot('Source code'))}</a>`;wireLanguage();
+      body.innerHTML=`<p>${escape(ot('Documents, slides and spreadsheets. Shared with people and agents.'))}</p><label>${escape(t('Language'))}${languagePicker()}</label><p>dowitme · MIT</p><p>${escape(ot('Based on'))} <a href="https://github.com/nyblnet/bento" target="_blank" rel="noopener noreferrer">bento</a> · © 2026 The Bento authors</p><a href="https://github.com/davide-relaunchlab/dowitme" target="_blank" rel="noopener noreferrer">${escape(ot('Source code'))}</a>`;wireLanguage();
     }
   }catch(error){if(generation===panelGeneration)body.textContent=error instanceof Error?error.message:String(error);}
 }

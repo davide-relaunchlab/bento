@@ -6,7 +6,9 @@ import {api,HttpError,type Snapshot} from './api.ts';
 import {WorkbookController} from './controller.ts';
 import {registerWebMCP} from './webmcp.ts';
 import {chatGPTSignInPath} from '../../app/chatgpt-auth.ts';
-import {newWorkbook,validateWorkbook} from '../shared/changes.ts';
+import {newWorkbook,validateWorkbook} from '../shared/content.ts';
+import type {OfficeDocument,OfficeFormat} from '../shared/content.ts';
+import type {NativeEditorHost,NativeDocument} from '../shared/editor-host.ts';
 import type {DashDoc} from '../../dash/src/model.ts';
 import type {OfficeHost} from '../../dash/src/officehost.ts';
 
@@ -21,6 +23,7 @@ let actor:{id:string;name:string;kind:string;email:string};
 const escape=(value:unknown)=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const icon=(name:string)=>`<svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${({
   book:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 8h16M4 13h16M4 18h16M10 8v13"/>',
+  text:'<path d="M6 3h9l4 4v14H5V3h1M14 3v5h5M8 12h8M8 16h6"/>',slide:'<rect x="3" y="4" width="18" height="13" rx="1"/><path d="M12 17v4M8 21h8M7 8h10M7 12h6"/>',
   back:'<path d="m14 6-6 6 6 6"/>',plus:'<path d="M12 5v14M5 12h14"/>',share:'<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 4v2"/>',
   history:'<path d="M3 11a9 9 0 1 1 3 8M3 4v7h7M12 7v5l3 2"/>',agent:'<rect x="4" y="7" width="16" height="13" rx="4"/><path d="M12 3v4M8 12h.01M16 12h.01M9 16h6"/>',
   download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',check:'<path d="m5 12 4 4L19 6"/>',upload:'<path d="M12 16V4m-5 5 5-5 5 5M4 16v5h16v-5"/>',
@@ -42,32 +45,35 @@ async function start(){
     webMCP=registerWebMCP(async()=>{await controller?.refresh();if(currentPanel)await renderPanel(currentPanel);},async()=>{if(controller?.pending)await controller.flush();});
   }catch(error){
     if(error instanceof HttpError&&error.status===401){
-      root.innerHTML=`<header class="office-header">${mark}${languagePicker()}</header><main class="office-welcome"><div class="office-file-mark">${icon('book')}</div><h1>${escape(ot('Sign in to your workspace'))}</h1><p>${escape(ot('People and agents, on the same cells.'))}</p><a class="office-button office-primary" href="${escape(chatGPTSignInPath(location.pathname+location.search))}">${escape(ot('Continue with ChatGPT'))}</a></main>`;wireLanguage();
-    }else{root.innerHTML=`<header class="office-header">${mark}</header><main class="office-welcome"><h1>${escape(ot('Could not open'))}</h1><p id="office-notice" role="alert"></p><a href="/">${escape(ot('Workbooks'))}</a></main>`;notice(error);}
+      root.innerHTML=`<header class="office-header">${mark}${languagePicker()}</header><main class="office-welcome"><div class="office-file-mark">${icon('book')}</div><h1>${escape(ot('Sign in to your workspace'))}</h1><p>${escape(ot('Documents, slides and spreadsheets. Shared with people and agents.'))}</p><a class="office-button office-primary" href="${escape(chatGPTSignInPath(location.pathname+location.search))}">${escape(ot('Continue with ChatGPT'))}</a></main>`;wireLanguage();
+    }else{root.innerHTML=`<header class="office-header">${mark}</header><main class="office-welcome"><h1>${escape(ot('Could not open'))}</h1><p id="office-notice" role="alert"></p><a href="/">${escape(ot('Files'))}</a></main>`;notice(error);}
   }
 }
 async function archive(){
   document.title='bento/office';
   root.innerHTML=`<header class="office-header">${mark}<span class="office-account">${escape(actor.name)}</span>${languagePicker()}</header>
-    <main class="office-library"><div class="office-library-heading"><div><h1>${escape(ot('Workbooks'))}</h1><p>${escape(ot('Your shared workspace'))}</p></div><div class="office-actions">${button('import','upload',ot('Import file'))}${button('new','plus',ot('Create workbook'),'office-primary')}</div></div>
-    <form id="office-create" class="office-inline-form" hidden><label for="office-name">${escape(t('Name'))}</label><input id="office-name" required maxlength="300" autocomplete="off"><button class="office-button office-primary" type="submit">${escape(ot('Create'))}</button></form>
+    <main class="office-library"><div class="office-library-heading"><div><h1>${escape(ot('Files'))}</h1><p>${escape(ot('Your shared workspace'))}</p></div><div class="office-actions">${button('import','upload',ot('Import file'))}${button('new','plus',ot('Create file'),'office-primary')}</div></div>
+    <form id="office-create" class="office-inline-form" hidden><label for="office-format">${escape(ot('File type'))}</label><select id="office-format"><option value="bento/dash">${escape(ot('Spreadsheet'))}</option><option value="bento/type">${escape(ot('Document'))}</option><option value="bento/slides">${escape(ot('Presentation'))}</option></select><label for="office-name">${escape(t('Name'))}</label><input id="office-name" required maxlength="300" autocomplete="off"><button class="office-button office-primary" type="submit">${escape(ot('Create'))}</button></form>
     <p id="office-notice" class="office-notice" role="alert" hidden></p><div id="office-files" class="office-files" aria-live="polite"></div></main>`;
   wireLanguage();
   bind('new',()=>{const form=document.getElementById('office-create')!;form.hidden=false;document.getElementById('office-name')!.focus();});
-  document.getElementById('office-create')!.addEventListener('submit',event=>{event.preventDefault();const submit=document.querySelector<HTMLButtonElement>('#office-create button')!;busy(submit,async()=>{const title=(document.getElementById('office-name') as HTMLInputElement).value.trim();const workbook=await api('/api/workbooks','POST',{title});location.href='/?workbook='+encodeURIComponent(workbook.id);});});
+  document.getElementById('office-create')!.addEventListener('submit',event=>{event.preventDefault();const submit=document.querySelector<HTMLButtonElement>('#office-create button')!;busy(submit,async()=>{const title=(document.getElementById('office-name') as HTMLInputElement).value.trim();const workbook=await api('/api/workbooks','POST',{title,format:(document.getElementById('office-format') as HTMLSelectElement).value});location.href='/?workbook='+encodeURIComponent(workbook.id);});});
   bind('import',()=>pickImport());
   const {workbooks}=await api('/api/workbooks'),files=document.getElementById('office-files')!;
-  files.innerHTML=workbooks.length?workbooks.map((w:any)=>`<a class="office-file" href="/?workbook=${encodeURIComponent(w.id)}"><span class="office-file-icon">${icon('book')}</span><span class="office-file-title">${escape(w.title)}</span><span class="office-file-role">${escape(roleName(w.role))}</span><time>${escape(new Date(w.updatedAt).toLocaleDateString(locale()))}</time></a>`).join(''):
-    `<div class="office-empty"><span class="office-file-mark">${icon('book')}</span><h2>${escape(ot('No workbooks yet'))}</h2><p>${escape(ot('Create a blank workbook or import CSV, Excel or a bento HTML file.'))}</p></div>`;
+  files.innerHTML=workbooks.length?workbooks.map((w:any)=>`<a class="office-file" href="/?workbook=${encodeURIComponent(w.id)}"><span class="office-file-icon">${icon(w.format==='bento/type'?'text':w.format==='bento/slides'?'slide':'book')}</span><span class="office-file-title">${escape(w.title)}<small>${escape(formatName(w.format))}</small></span><span class="office-file-role">${escape(roleName(w.role))}</span><time>${escape(new Date(w.updatedAt).toLocaleDateString(locale()))}</time></a>`).join(''):
+    `<div class="office-empty"><span class="office-file-mark">${icon('book')}</span><h2>${escape(ot('No files yet'))}</h2><p>${escape(ot('Create a document, presentation or spreadsheet, or import a bento HTML file.'))}</p></div>`;
 }
+const formatName=(format:string)=>ot(format==='bento/type'?'Document':format==='bento/slides'?'Presentation':'Spreadsheet');
 const roleName=(role:string)=>ot(role==='owner'?'Owner':role==='editor'?'Editor':'Viewer');
 async function openWorkbook(id:string){
-  const snapshot=await api<Snapshot>('/api/workbooks/'+encodeURIComponent(id));
-  controller=new WorkbookController(snapshot);controller.summaryFor=patches=>ot(patches.every(p=>['setCanvasCells','setCells','setOverrides'].includes(p.op))?'Changes to cells':'Workbook updated');
-  root.innerHTML=`<header class="office-header office-editor-header"><a class="office-back" href="/" title="${escape(ot('Workbooks'))}">${icon('back')}${mark}</a><span id="office-save-status" class="office-save-status" role="status"></span><nav class="office-actions" aria-label="bento/office">${button('changes','history',ot('Changes'))}${button('sharing','share',ot('Sharing'))}${button('agents','agent',ot('Agents'))}${button('export','download',ot('Export HTML'))}</nav></header>
+  const snapshot=await api<Snapshot<OfficeDocument>>('/api/workbooks/'+encodeURIComponent(id));
+  controller=new WorkbookController(snapshot);controller.summaryFor=patches=>ot(patches.every(p=>['setCanvasCells','setCells','setOverrides'].includes(p.op))?'Changes to cells':'File updated');
+  root.innerHTML=`<header class="office-header office-editor-header"><a class="office-back" href="/" title="${escape(ot('Files'))}">${icon('back')}${mark}</a><span id="office-save-status" class="office-save-status" role="status"></span><nav class="office-actions" aria-label="bento/office">${button('changes','history',ot('Changes'))}${button('sharing','share',ot('Sharing'))}${button('agents','agent',ot('Agents'))}${button('export','download',ot('Export HTML'))}</nav></header>
     <div id="office-problem" class="office-problem" hidden><p id="office-notice" role="alert"></p><div class="office-actions">${button('retry','check',ot('Retry save'))}${button('draft','download',ot('Download your draft'))}${button('reload','history',ot('Reload saved version'))}</div></div><aside id="office-panel" class="office-panel" hidden></aside>`;
   document.body.classList.add('office-editing');editor.hidden=false;
   controller.onState=()=>{
+    controller!.notifyEditor();
+    document.title=(controller!.store?.doc.title??controller!.confirmed.title)+' — bento/office';
     const status=document.getElementById('office-save-status')!;
     status.textContent=controller!.error?ot('Not saved'):controller!.pending?ot('Saving to workspace…'):controller!.readOnly?roleName('viewer'):ot('Saved to workspace');
     status.classList.toggle('is-pending',controller!.pending);
@@ -76,11 +82,23 @@ async function openWorkbook(id:string){
     if(controller!.error)notice(controller!.error,true);
     const title=document.querySelector<HTMLInputElement>('.dx-title');if(title&&document.activeElement!==title)title.value=controller!.store?.doc.title??controller!.confirmed.title;
   };
-  const host:OfficeHost={readOnly:controller.readOnly,pending:()=>controller!.pending,save:async()=>{try{await controller!.flush();}catch(error){notice(error);}},about:()=>void renderPanel('settings'),attach:(store,view)=>{controller!.attach(store,view);controller!.onState();},
-    api:{get document(){return structuredClone(controller!.store?.doc??controller!.confirmed.document);},get revision(){return controller!.revision;},call:async(name:string,input:unknown)=>{await controller!.flush();const result=await api('/api/tools/'+name,'POST',input);await controller!.refresh();return result;}}};
-  (window as unknown as {__BENTO_OFFICE_HOST__:OfficeHost}).__BENTO_OFFICE_HOST__=host;
-  document.getElementById('bento-doc')!.textContent=JSON.stringify(snapshot.document).replace(/</g,'\\u003c');
-  await import('../../dash/src/main.ts');
+  if(snapshot.document.format==='bento/dash'){
+    const host:OfficeHost={readOnly:controller.readOnly,pending:()=>controller!.pending,save:async()=>{await controller!.flush();},about:()=>void renderPanel('settings'),attach:(store,view)=>{controller!.attach(store,view);controller!.onState();},
+      api:{get document(){return structuredClone(controller!.store?.doc??controller!.confirmed.document) as DashDoc;},get revision(){return controller!.revision;},call:callTool}};
+    (window as unknown as {__BENTO_OFFICE_HOST__:OfficeHost}).__BENTO_OFFICE_HOST__=host;
+    document.getElementById('bento-doc')!.textContent=JSON.stringify(snapshot.document).replace(/</g,'\\u003c');
+    await import('../../dash/src/main.ts');
+  }else{
+    const format=snapshot.document.format;
+    const {configureApp}=await import('../../kernel/src/app.ts');configureApp({appId:format.replace('/','-'),appName:format,manifestUrl:''});
+    const host:NativeEditorHost={format,get document(){return structuredClone(controller!.confirmed.document) as NativeDocument;},get readOnly(){return controller!.readOnly;},
+      pending:()=>controller!.pending,save:()=>controller!.flush(),exportHTML:()=>exportHTML(),about:()=>void renderPanel('settings'),changed:next=>controller!.nativeChanged(next),
+      attach:adapter=>{controller!.attachNative(adapter);controller!.onState();},undo:()=>controller!.undo(),redo:()=>controller!.redo(),canUndo:()=>controller!.canUndo,canRedo:()=>controller!.canRedo,
+      api:{get document(){return structuredClone(controller!.store?.doc??controller!.confirmed.document) as NativeDocument;},get revision(){return controller!.revision;},call:callTool}};
+    (window as unknown as {__BENTO_NATIVE_HOST__:NativeEditorHost}).__BENTO_NATIVE_HOST__=host;
+    const frame=document.createElement('iframe');frame.className='office-native-editor';frame.allowFullscreen=true;frame.title=formatName(format);frame.src='/office/editors/'+(format==='bento/type'?'type':'slides')+'.html';editor.append(frame);
+  }
+  async function callTool(name:string,input:unknown){await controller!.flush();const result=await api('/api/tools/'+name,'POST',input);await controller!.refresh();return result;}
   const importFindings=sessionStorage.getItem('office-import-findings');if(importFindings){sessionStorage.removeItem('office-import-findings');await renderPanel('changes');notice(importFindings);}
   for(const name of ['changes','sharing','agents'])bind(name,()=>void renderPanel(name));
   bind('export',()=>void exportHTML().catch(notice));bind('draft',()=>void exportHTML(true).catch(notice));
@@ -124,10 +142,11 @@ async function renderPanel(name:string){
       body.querySelectorAll<HTMLButtonElement>('[data-agent]').forEach(el=>el.onclick=()=>busy(el,async()=>{await api(controller!.root+'/agents/'+el.dataset.agent,'DELETE');await renderPanel('agents');}));
       body.querySelector('form')?.addEventListener('submit',event=>{event.preventDefault();const form=event.target as HTMLFormElement,data=new FormData(form);busy(form.querySelector('button')!,async()=>{const result=await api(controller!.root+'/agents','POST',{name:data.get('name'),permission:data.get('permission'),expiresDays:Number(data.get('days'))});form.hidden=true;const key=document.getElementById('office-new-key')!;key.innerHTML=`<p>${escape(ot('Copy this key now. It is shown only once.'))}</p><textarea readonly aria-label="Bearer token"></textarea>`;key.querySelector('textarea')!.value=result.token;});});
     }else {
-      body.innerHTML=`<p>${escape(ot('People and agents, on the same cells.'))}</p><label>${escape(t('Language'))}${languagePicker()}</label><p>bento/office · MIT</p><a href="https://github.com/davide-relaunchlab/bento" target="_blank" rel="noopener noreferrer">${escape(ot('Source code'))}</a>`;wireLanguage();
+      body.innerHTML=`<p>${escape(ot('Documents, slides and spreadsheets. Shared with people and agents.'))}</p><label>${escape(t('Language'))}${languagePicker()}</label><p>bento/office · MIT</p><a href="https://github.com/davide-relaunchlab/bento" target="_blank" rel="noopener noreferrer">${escape(ot('Source code'))}</a>`;wireLanguage();
     }
   }catch(error){if(generation===panelGeneration)body.textContent=error instanceof Error?error.message:String(error);}
 }
+function scopeLabel(scope:any){const doc=controller!.confirmed.document;return doc.format==='bento/dash'?doc.sheets.find(s=>s.id===scope.sheet)?.name??scope.sheet:scope.slide??(scope.kind==='block'?ot('Document'):scope.kind==='slide'?ot('Presentation'):undefined);}
 function displayDifference(kind:string,value:any):string{
   if(value==null)return ot('Empty');
   if(kind==='cell') {const content=value.f??value.v; const style={...value};delete style.f;delete style.v;return String(content??ot('Empty'))+(Object.keys(style).length?'\n'+JSON.stringify(style,null,2):'');}
@@ -138,7 +157,7 @@ async function inspectChange(id:string,proposal:boolean){
   body.textContent=ot('Loading…');
   try {
     const detail=await api(controller!.root+(proposal?'/proposals/':'/changes/')+id);if(generation!==panelGeneration)return;
-    body.innerHTML=`<h3>${escape(detail.summary)}</h3><p class="office-muted">${escape(detail.actorName)}</p><div class="office-differences">${detail.differences.map((d:any)=>{const before=d.scope.kind==='cell'?d.before?.cell:d.before,after=d.scope.kind==='cell'?d.after?.cell:d.after;return `<section class="office-difference"><h4>${escape([controller!.confirmed.document.sheets.find(s=>s.id===d.scope.sheet)?.name??d.scope.sheet,d.scope.key,d.scope.rid].filter(v=>v!==undefined).join(' · ')||detail.summary)}</h4><span>${escape(ot('Before'))}</span><pre>${escape(displayDifference(d.scope.kind,before))}</pre><span>${escape(ot('After'))}</span><pre>${escape(displayDifference(d.scope.kind,after))}</pre></section>`;}).join('')}</div><div class="office-review-actions">${!controller!.readOnly?(proposal?`${button('accept','check',ot('Accept changes'),'office-primary')}${button('reject','close',ot('Reject proposal'))}`:detail.kind!=='create'?button('undo-change','history',ot('Undo this change')):''):''}</div>`;
+    body.innerHTML=`<h3>${escape(detail.summary)}</h3><p class="office-muted">${escape(detail.actorName)}</p><div class="office-differences">${detail.differences.map((d:any)=>{const before=d.scope.kind==='cell'?d.before?.cell:d.before,after=d.scope.kind==='cell'?d.after?.cell:d.after;return `<section class="office-difference"><h4>${escape([scopeLabel(d.scope),d.scope.key,d.scope.rid].filter(v=>v!==undefined).join(' · ')||detail.summary)}</h4><span>${escape(ot('Before'))}</span><pre>${escape(displayDifference(d.scope.kind,before))}</pre><span>${escape(ot('After'))}</span><pre>${escape(displayDifference(d.scope.kind,after))}</pre></section>`;}).join('')}</div><div class="office-review-actions">${!controller!.readOnly?(proposal?`${button('accept','check',ot('Accept changes'),'office-primary')}${button('reject','close',ot('Reject proposal'))}`:detail.kind!=='create'?button('undo-change','history',ot('Undo this change')):''):''}</div>`;
     bind('accept',event=>busy(event.currentTarget as HTMLButtonElement,async()=>{await controller!.review('/proposals/'+id+'/accept');await renderPanel('changes');}));
     bind('reject',event=>busy(event.currentTarget as HTMLButtonElement,async()=>{await controller!.review('/proposals/'+id+'/reject',false);await renderPanel('changes');}));
     bind('undo-change',event=>busy(event.currentTarget as HTMLButtonElement,async()=>{await controller!.review('/changes/'+id+'/undo');await renderPanel('changes');}));
@@ -146,32 +165,39 @@ async function inspectChange(id:string,proposal:boolean){
 }
 async function exportHTML(draft=false){
   if(!controller)return;if(!draft)await controller.flush();
-  const response=await fetch('/standalone/Bento_Dash.bento.html');if(!response.ok)throw new Error(ot('Export failed'));
+  const doc=structuredClone(draft?(controller.store?.doc??controller.confirmed.document):controller.confirmed.document);
+  const name=doc.format==='bento/type'?'Type':doc.format==='bento/slides'?'Slides':'Dash';
+  const response=await fetch('/standalone/Bento_'+name+'.bento.html');if(!response.ok)throw new Error(ot('Export failed'));
   const shell=new DOMParser().parseFromString(await response.text(),'text/html');
   const {serializeWith,downloadFile,suggestedFileName}=await import('../../kernel/src/save.ts');
-  const doc=structuredClone(controller.store?.doc??controller.confirmed.document);
-  const {docForExport}=await import('../../dash/src/model.ts');
-  downloadFile(serializeWith(shell,docForExport(doc)),suggestedFileName(doc,draft?'draft':''));
+  downloadFile(serializeWith(shell,await exportContent(doc)),suggestedFileName(doc,draft?'draft':''));
 }
+async function exportContent(doc:OfficeDocument):Promise<OfficeDocument>{
+  if(doc.format==='bento/dash')return (await import('../../dash/src/model.ts')).docForExport(doc);
+  if(doc.format==='bento/type')return (await import('../../type/src/model.ts')).docForExport(doc);
+  const {collab:_,blobs:__,...content}=doc;return content;
+}
+
 function pickImport(){
   const input=document.createElement('input');input.type='file';input.accept='.csv,.tsv,.xlsx,.html';
   input.onchange=()=>{const file=input.files?.[0];if(file)void importFile(file).catch(notice);};input.click();
 }
 async function importFile(file:File){
   if(file.size>8*1024*1024)throw new Error(ot('The file exceeds 8 MB.'));
-  let doc:DashDoc=newWorkbook(file.name.replace(/\.(xlsx|csv|tsv|bento\.html|html)$/i,''));
+  let doc:OfficeDocument=newWorkbook(file.name.replace(/\.(xlsx|csv|tsv|bento\.html|html)$/i,''));
   if(/\.xlsx$/i.test(file.name)){
-    const {importXlsx,installNames}=await import('../../dash/src/xlsx.ts');const result=await importXlsx(new Uint8Array(await file.arrayBuffer()),{source:file.name,at:new Date().toISOString(),names:true,idPrefix:'import-'+crypto.randomUUID().slice(0,8)});doc.sheets=result.sheets;installNames(doc,result.names);
+    const {importXlsx,installNames}=await import('../../dash/src/xlsx.ts');const result=await importXlsx(new Uint8Array(await file.arrayBuffer()),{source:file.name,at:new Date().toISOString(),names:true,idPrefix:'import-'+crypto.randomUUID().slice(0,8)});(doc as DashDoc).sheets=result.sheets;installNames(doc as DashDoc,result.names);
     if(result.findings.length)sessionStorage.setItem('office-import-findings',result.findings.map(f=>f.message).join('\n'));
   }else if(/\.(csv|tsv)$/i.test(file.name)){
-    const {importDelimited}=await import('../../dash/src/import.ts');const result=importDelimited(await file.text(),{name:doc.title,sheetId:'sheet-1',source:file.name,at:new Date().toISOString()});doc.sheets=[result.sheet];
+    const {importDelimited}=await import('../../dash/src/import.ts');const result=importDelimited(await file.text(),{name:doc.title,sheetId:'sheet-1',source:file.name,at:new Date().toISOString()});(doc as DashDoc).sheets=[result.sheet];
   }else{
     const html=await file.text();const raw=/<script\b[^>]*\bid=["']bento-doc["'][^>]*>([\s\S]*?)<\/script\s*>/i.exec(html)?.[1];if(!raw)throw new Error(ot('This file does not contain a bento workbook.'));
-    const {parseDoc,docForExport}=await import('../../dash/src/model.ts');const result=parseDoc(raw);if(!result.ok||result.frozen)throw new Error(ot('This file cannot be edited in this workspace.'));
-    const {readonly:_,template:__,...content}=docForExport(result.doc);doc=content as DashDoc;
+    const parsed=JSON.parse(raw);if(!parsed.docId)throw new Error(ot('This file cannot be edited in this workspace.'));
+    const {readonly:_,template:__,collab:___,blobs:____,...content}=await exportContent(parsed);doc=content as OfficeDocument;
   }
   doc=validateWorkbook(JSON.parse(JSON.stringify(doc)));
   const created=await api('/api/workbooks','POST',{title:doc.title,document:doc});location.href='/?workbook='+encodeURIComponent(created.id);
 }
+window.addEventListener('beforeunload',event=>{if(controller?.pending||controller?.editing||controller?.error){event.preventDefault();event.returnValue='';}});
 window.addEventListener('pagehide',()=>{controller?.dispose();webMCP.dispose();});
 void start();

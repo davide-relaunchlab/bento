@@ -71,6 +71,13 @@ const SHAPE_MENU: Array<{ kind: ShapeKind; label: string; icon: string; draw?: '
   { kind: 'path', label: 'Polygon', icon: ICONS.polygon, draw: 'poly', tip: 'Click to place corners; click the first point (or double-click) to close the shape' },
 ]
 
+/** Optional service boundary; absent in self-contained standalone files. */
+export interface EditorHost {
+  save(): Promise<void>
+  exportHTML(): Promise<void>
+  about(): void
+}
+
 export class Editor {
   private canvas!: SlideCanvas
   private panel!: PropsPanel
@@ -95,6 +102,7 @@ export class Editor {
   constructor(
     private root: HTMLElement,
     private store: Store,
+    private host?: EditorHost,
   ) {
     this.build()
     this.wireKeyboard()
@@ -105,9 +113,9 @@ export class Editor {
       this.dirtyDot.classList.toggle('on', store.dirty)
     })
     window.addEventListener('beforeunload', (ev) => {
-      if (store.dirty) ev.preventDefault()
+      if (!this.host && store.dirty) ev.preventDefault()
     })
-    this.wireAutosave()
+    if (!this.host) this.wireAutosave()
     this.wirePaste()
     this.wireContextMenu()
     store.on('doc', () => this.syncLinkedCharts())
@@ -117,10 +125,40 @@ export class Editor {
       this.openLayoutPicker(ev.detail.anchor as HTMLElement, { kind: 'apply' })
     }) as EventListener)
     this.rebuildSidebar()
+    if (this.host) {
+      const endGesture = () => { this.hostGesture = false }
+      this.root.addEventListener('pointerdown', () => { this.hostGesture = true }, true)
+      window.addEventListener('pointerup', endGesture)
+      window.addEventListener('pointercancel', endGesture)
+      window.addEventListener('blur', endGesture)
+      this.setHostedReadOnly(store.readOnly)
+    }
+  }
+
+  private hostGesture = false
+  private hostedReadOnly?: boolean
+
+  /** Remote replacement must wait for callbacks holding live model references. */
+  isEditing(): boolean {
+    const focused = document.activeElement as HTMLElement | null
+    return this.hostGesture || this.canvas.isEditingText || this.canvas.isPathEditing || this.canvas.isDrawing || !!focused && (
+      focused.isContentEditable || focused.matches('input:not([type=checkbox]):not([type=radio]):not([type=button]),textarea')
+    )
+  }
+
+  setHostedReadOnly(value: boolean) {
+    if (this.hostedReadOnly === value) return
+    this.hostedReadOnly = value
+    this.store.readOnly = value
+    document.body.classList.toggle('ed-reader', value)
+    const title = this.root.querySelector<HTMLInputElement>('.ed-title')
+    if (title) title.disabled = value
+    this.store.emit('selection')
   }
 
   /** wire the live-collaboration session (avatars, remote selections, relay) */
   connectSync(session: import('../sync/session').SyncSession) {
+    if (this.host) return
     this.session = session
     let known = new Map(session.peers().map((p) => [p.actor, p.name]))
     session.onPeers(() => {
@@ -244,6 +282,7 @@ export class Editor {
     title.title = t('Deck title — shown in the tab, on {{title}} fields, and as the suggested file name')
     title.value = this.store.doc.title
     title.spellcheck = false
+    if (this.host) title.disabled = this.store.readOnly
     title.addEventListener('change', () => {
       this.store.commit(() => { this.store.doc.title = title.value || 'Untitled' })
       this.syncWindowTitle()
@@ -297,7 +336,7 @@ export class Editor {
     this.updatesB = btn(ICONS.sync, '', () => this.openAbout(true), t('Check for updates'))
     this.updatesB.style.display = 'none'
     setTimeout(async () => {
-      if (!autoCheckEnabled() || offlineEnabled()) return
+      if (this.host || !autoCheckEnabled() || offlineEnabled()) return
       const r = await checkForUpdates()
       this.lastAutoCheck = r
       if (r.status === 'update') {
@@ -316,6 +355,7 @@ export class Editor {
     const saveB = btn(ICONS.save, t('Save'), () => this.save(false), canWriteInPlace()
       ? t('Save — rewrite this file in place (⌘S)')
       : t('Save — download an updated copy (⌘S). This browser can’t rewrite the open file.'))
+    if (this.host) { saveB.title = t('Save'); this.dirtyDot.title = t('Save') }
     saveB.appendChild(this.dirtyDot) // the amber unsaved-changes dot lives ON Save
     const pdfB = btn(ICONS.pdf, '', () => this.exportPdf(), t('Export PDF (print)'))
     const helpB = btn('<b class="ed-help-q">?</b>', '', () => this.openHelp(), t('Shortcuts & tips (?)'))
@@ -495,7 +535,7 @@ export class Editor {
     this.canvas.onSlideNav = (dir) => this.store.goToLinear(dir)
     this.panel = new PropsPanel(this.props, this.store)
 
-    if (this.store.doc.collab?.role === 'reader') this.enterReaderMode()
+    if (!this.host && this.store.doc.collab?.role === 'reader') this.enterReaderMode()
   }
 
   /** Live viewer: block user edits (store.readOnly), hide editing chrome, and
@@ -769,7 +809,7 @@ export class Editor {
   }
 
   /** Close a panel if it is open — idempotent, unlike togglePanel. */
-  private closePanel(side: 'left' | 'right') {
+  closePanel(side: 'left' | 'right') {
     const el = side === 'left' ? this.sidebar : this.props
     if (el.classList.contains('ed-collapsed')) return
     el.classList.add('ed-collapsed')
@@ -855,6 +895,10 @@ export class Editor {
         onClick()
       })
       into.appendChild(tag(b))
+    }
+    if (this.host) {
+      item(ICONS.copy, t('Save a copy…'), t('Save a copy…'), () => { void this.host!.exportHTML().catch(error => this.toast(String(error))) })
+      return
     }
     {
       // FILE operations only — everything that goes to OTHER PEOPLE lives in
@@ -1034,6 +1078,7 @@ export class Editor {
 
   /** Paste-and-apply document JSON (the counterpart of Copy document JSON). */
   private openReplaceJson() {
+    if (this.host) return
     document.querySelector('.ed-about-overlay')?.remove()
     const overlay = div('ed-about-overlay')
     const box = div('ed-about')
@@ -1172,6 +1217,7 @@ export class Editor {
   private shareDropdown(): HTMLElement {
     const wrap = div('ed-dropdown')
     this.shareWrap = wrap
+    if (this.host) { wrap.hidden = true; return wrap }
     this.shareB = btn(ICONS.share, t('Share'), () => {
       wrap.classList.toggle('open')
       if (wrap.classList.contains('open')) this.renderSharePanel()
@@ -1590,11 +1636,13 @@ export class Editor {
       if (c.code === locale()) b.classList.add('ed-lang-on')
       menu.appendChild(b)
     }
-    menu.appendChild(div('ed-menu-sep'))
-    menu.appendChild(btn('', t('Manage languages…'), () => {
-      wrap.classList.remove('open')
-      void this.openLanguages()
-    }))
+    if (!this.host) {
+      menu.appendChild(div('ed-menu-sep'))
+      menu.appendChild(btn('', t('Manage languages…'), () => {
+        wrap.classList.remove('open')
+        void this.openLanguages()
+      }))
+    }
     // end-anchored so the menu never overflows the window edge — as a class,
     // not inline left/right, so it follows the chrome's direction (.ed-lang-menu
     // in styles.css, alongside the Save menu's identical rule)
@@ -2459,6 +2507,7 @@ export class Editor {
    * in a way dropping a picture is not.
    */
   private async openDroppedDeck(ev: DragEvent): Promise<boolean> {
+    if (this.host) { ev.preventDefault(); return false }
     const item = [...(ev.dataTransfer?.items ?? [])].find((i) => i.kind === 'file')
     const named = ev.dataTransfer?.files?.[0]?.name ?? ''
     if (!item || !/\.bento\.html$/i.test(named)) return false
@@ -2597,6 +2646,7 @@ export class Editor {
 
   /** Shortcuts + tips overlay (press ? or the topbar help button). */
   private openHelp() {
+    if (this.host) { this.host.about(); return }
     document.querySelector('.ed-about-overlay')?.remove()
     const overlay = div('ed-about-overlay')
     const box = div('ed-about ed-help-box')
@@ -2706,6 +2756,12 @@ export class Editor {
   }
 
   async save(forcePicker: boolean) {
+    if (this.host) {
+      this.canvas.commitTextEdit()
+      try { await this.host.save(); this.flashSaved() }
+      catch (error) { this.toast(String(error)) }
+      return
+    }
     this.canvas.commitTextEdit()
     // shared docs persist their CRDT state so the saved copy can rejoin
     // as a true fork later (offline edits merge both ways)
@@ -3099,6 +3155,7 @@ export class Editor {
 
   /** About dialog: version, user-initiated update check, licenses. */
   private openAbout(runCheck = false) {
+    if (this.host) { this.host.about(); return }
     document.querySelector('.ed-about-overlay')?.remove()
     const overlay = div('ed-about-overlay')
     const box = div('ed-about')

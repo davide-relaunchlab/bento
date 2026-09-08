@@ -18,8 +18,9 @@ for(const name of(await readdir(resolve(root,'drizzle'))).filter(n=>n.endsWith('
 const server=await createServer({root,plugins:[{
   name:'office-local-api',enforce:'post',configureServer(vite){
     vite.middlewares.use(async(req,res,next)=>{
-      if(req.url?.split('?')[0]==='/standalone/Bento_Dash.bento.html'){
-        try{const html=await readFile(resolve(root,'dash/dist-single/Bento_Dash.bento.html'));res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(html);}
+      const standalone=/^\/standalone\/Bento_(Dash|Type|Slides)\.bento\.html$/.exec(req.url?.split('?')[0]??'');
+      if(standalone){
+        try{const html=await readFile(resolve(root,standalone[1].toLowerCase()+'/dist-single/Bento_'+standalone[1]+'.bento.html'));res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(html);}
         catch{res.writeHead(404);res.end('Build dash first: npm run build:single');}
         return;
       }

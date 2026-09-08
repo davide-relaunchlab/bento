@@ -3,6 +3,17 @@ import {PACKED_LOCALES} from '../../dash/src/i18n/packed.ts';
 // English source keys. Every office string has a translation in each locale
 // actually shipped by dash; the check derives that list from its packed data.
 const rows:Record<string,Record<string,string>>={
+  "Files":{"it": "File", "es": "Archivos", "fr": "Fichiers", "de": "Dateien", "ja": "ファイル", "zh-Hans": "文件", "zh-Hant": "檔案"},
+  "Create file":{"it": "Crea file", "es": "Crear archivo", "fr": "Créer un fichier", "de": "Datei erstellen", "ja": "ファイルを作成", "zh-Hans": "创建文件", "zh-Hant": "建立檔案"},
+  "No files yet":{"it": "Il primo file parte da qui", "es": "Tu primer archivo empieza aquí", "fr": "Créez votre premier fichier", "de": "Erstellen Sie Ihre erste Datei", "ja": "最初のファイルを作成", "zh-Hans": "创建第一份文件", "zh-Hant": "建立第一份檔案"},
+  "File type":{"it": "Tipo di file", "es": "Tipo de archivo", "fr": "Type de fichier", "de": "Dateityp", "ja": "ファイルの種類", "zh-Hans": "文件类型", "zh-Hant": "檔案類型"},
+  "Spreadsheet":{"it": "Foglio di calcolo", "es": "Hoja de cálculo", "fr": "Classeur", "de": "Tabellenkalkulation", "ja": "スプレッドシート", "zh-Hans": "电子表格", "zh-Hant": "試算表"},
+  "Document":{"it": "Documento", "es": "Documento", "fr": "Document", "de": "Dokument", "ja": "文書", "zh-Hans": "文档", "zh-Hant": "文件"},
+  "Presentation":{"it": "Presentazione", "es": "Presentación", "fr": "Présentation", "de": "Präsentation", "ja": "プレゼンテーション", "zh-Hans": "演示文稿", "zh-Hant": "簡報"},
+  "File updated":{"it": "File aggiornato", "es": "Archivo actualizado", "fr": "Fichier mis à jour", "de": "Datei aktualisiert", "ja": "ファイルを更新", "zh-Hans": "文件已更新", "zh-Hant": "檔案已更新"},
+  "Documents, slides and spreadsheets. Shared with people and agents.":{"it": "Documenti, presentazioni e fogli. Insieme a persone e agenti.", "es": "Documentos, presentaciones y hojas. Con personas y agentes.", "fr": "Documents, présentations et classeurs. Avec des personnes et des agents.", "de": "Dokumente, Präsentationen und Tabellen. Gemeinsam mit Menschen und Agenten.", "ja": "文書、スライド、表。人とエージェントで共同作業。", "zh-Hans": "文档、演示文稿和表格，与人和智能体协作。", "zh-Hant": "文件、簡報和試算表，與人和智慧代理協作。"},
+  "Create a document, presentation or spreadsheet, or import a bento HTML file.":{"it": "Crea un documento, una presentazione o un foglio, oppure importa un file HTML di bento.", "es": "Crea un documento, presentación u hoja, o importa HTML de bento.", "fr": "Créez un document, une présentation ou un classeur, ou importez un HTML bento.", "de": "Erstellen Sie ein Dokument, eine Präsentation oder Tabelle, oder importieren Sie bento-HTML.", "ja": "文書、スライド、表を作成するか、bento HTMLを読み込めます。", "zh-Hans": "创建文档、演示文稿或表格，或导入 bento HTML 文件。", "zh-Hant": "建立文件、簡報或試算表，或匯入 bento HTML 檔案。"},
+
   "Create":{"it": "Crea", "es": "Crear", "fr": "Créer", "de": "Erstellen", "ja": "作成", "zh-Hans": "创建", "zh-Hant": "建立"},
   "Permissions":{"it": "Permessi", "es": "Permisos", "fr": "Autorisations", "de": "Berechtigungen", "ja": "権限", "zh-Hans": "权限", "zh-Hant": "權限"},
   "Email":{"it": "Email", "es": "Correo electrónico", "fr": "E-mail", "de": "E-Mail", "ja": "メール", "zh-Hans": "电子邮件", "zh-Hant": "電子郵件"},

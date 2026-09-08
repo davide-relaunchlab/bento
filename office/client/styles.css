@@ -28,3 +28,6 @@
   .office .dx-bridge{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .office .dx-fx-input{min-width:100px;}
 }
+.office-native-editor{display:block;border:0;width:100%;height:100%;min-height:0;background:var(--surface);}
+.office-file-title small{display:block;margin-top:6px;font-size:11px;font-weight:400;color:var(--muted);}
+@media(max-width:700px){.office-inline-form label{flex-basis:100%;}.office-inline-form select{width:100%;}}

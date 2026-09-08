@@ -46,16 +46,16 @@ export async function apiFetch(request:Request,env:Env):Promise<Response> {
     if(path[0]!=='api'||path[1]!=='workbooks')throw new OfficeError('not_found','Percorso non disponibile.',404);
     if(path.length===2) {
       if(method==='GET')return json({workbooks:await office.list()});
-      if(method==='POST'){const input=await body(request,z.object({title:z.string().trim().min(1).max(300),document:z.unknown().optional()}).strict());return json(await office.create(input.title,input.document),201);}
+      if(method==='POST'){const input=await body(request,z.object({title:z.string().trim().min(1).max(300),document:z.unknown().optional(),format:z.enum(['bento/dash','bento/slides','bento/type']).optional()}).strict());return json(await office.create(input.title,input.document,input.format),201);}
     }
     const id=path[2],section=path[3],item=path[4],action=path[5];
-    if(!id||id.length>200)throw new OfficeError('not_found','Foglio non disponibile.',404);
+    if(!id||id.length>200)throw new OfficeError('not_found','Documento non disponibile.',404);
     if(path.length===3&&method==='GET') {
       const raw=url.searchParams.get('revision');let version: number|undefined;
       if(raw!==null){const parsed=revision.safeParse(Number(raw));if(!parsed.success)throw new OfficeError('invalid_request','Versione non valida.');version=parsed.data;}
       return json(await office.get(id,version));
     }
-    if(section==='range'&&path.length===4&&method==='GET') {const book=await office.get(id);return json({revision:book.revision,cells:readRange(book.document,url.searchParams.get('sheet')??'',url.searchParams.get('range')??'')});}
+    if(section==='range'&&path.length===4&&method==='GET') {const book=await office.get(id);if(book.document.format!=='bento/dash')throw new OfficeError('invalid_format','Le celle sono disponibili solo nei fogli di calcolo.',400);return json({revision:book.revision,cells:readRange(book.document,url.searchParams.get('sheet')??'',url.searchParams.get('range')??'')});}
     if(section==='changes') {
       if(path.length===4&&method==='GET'){const before=url.searchParams.get('before');return json({changes:await office.history(id,before===null?undefined:revision.parse(Number(before)))});}
       if(path.length===4&&method==='POST')return json(await office.change(id,await body(request,changeInput)));

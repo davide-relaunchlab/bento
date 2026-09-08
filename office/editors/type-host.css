@@ -1,0 +1,7 @@
+@media (max-width:700px){
+ .t-main{position:relative;grid-template-columns:0 minmax(0,1fr) 0!important;}
+ .t-main .t-side,.t-main .t-props{position:absolute;top:0;bottom:0;z-index:30;width:min(290px,88vw);box-shadow:0 6px 30px #0004;}
+ .t-main .t-side{left:0;}.t-main .t-props{right:0;}
+ .t-main.t-side-off .t-side,.t-main.t-props-off .t-props{display:none;}
+ .t-scroll{grid-column:2;min-width:0;padding:12px 8px;}
+}

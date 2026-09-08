@@ -4,7 +4,7 @@ import { Storage } from './storage.ts';
 export type Role = 'owner'|'editor'|'viewer';
 export type Permission = 'read'|'propose'|'write'|'manage';
 export type Actor = { id:string; name:string; kind:'person'|'agent'|'browser_agent'; userId:string; email?:string; token?:TokenRow };
-export type WorkbookRow = { id:string; doc_id:string; title:string; owner_id:string; revision:number; acl_version:number; content_key:string; created_at:number; updated_at:number };
+export type WorkbookRow = { id:string; doc_id:string; title:string; format:'bento/dash'|'bento/slides'|'bento/type'; owner_id:string; revision:number; acl_version:number; content_key:string; created_at:number; updated_at:number };
 export type TokenRow = { id:string; workbook_id:string; creator_id:string; name:string; permission:'read'|'propose'|'write'; expires_at:number; revoked_at:number|null };
 export type Access = { workbook:WorkbookRow; role:Role; actor:Actor };
 export async function identify(request:Request, db:Storage):Promise<Actor> {
@@ -23,9 +23,9 @@ export async function identify(request:Request, db:Storage):Promise<Actor> {
   return {id:user.userId,name:user.displayName,kind:'person',userId:user.userId,email:user.email};
 }
 export async function authorize(db:Storage, actor:Actor, id:string, permission:Permission='read'):Promise<Access> {
-  if(actor.token && actor.token.workbook_id!==id) throw new OfficeError('not_found','Foglio non disponibile.',404);
+  if(actor.token && actor.token.workbook_id!==id) throw new OfficeError('not_found','Documento non disponibile.',404);
   const row=await db.one<WorkbookRow & {role:Role}>(`SELECT w.*,m.role FROM workbooks w JOIN members m ON m.workbook_id=w.id WHERE w.id=? AND m.user_id=?`,[id,actor.userId]);
-  if(!row) throw new OfficeError('not_found','Foglio non disponibile.',404);
+  if(!row) throw new OfficeError('not_found','Documento non disponibile.',404);
   if(actor.token) {
     const token=await db.one<TokenRow>('SELECT * FROM agent_tokens WHERE id=? AND revoked_at IS NULL AND expires_at>?',[actor.token.id,Date.now()]);
     if(!token) throw new OfficeError('unauthorized','Credenziale agente scaduta o revocata.',401);

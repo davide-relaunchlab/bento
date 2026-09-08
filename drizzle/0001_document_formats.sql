@@ -1,0 +1,1 @@
+ALTER TABLE `workbooks` ADD `format` text DEFAULT 'bento/dash' NOT NULL;

@@ -23,6 +23,13 @@ type HistoryEntry = {
   view: ViewSnapshot
 }
 
+/** Hosted documents persist through their authenticated owner, never local history. */
+export interface StoreDelegate {
+  changed(doc: BentoDoc): void
+  undo(): boolean
+  redo(): boolean
+}
+
 const MAX_UNDO = 100
 
 /** Central state: document, current slide, selection, undo/redo, dirty flag. */
@@ -42,6 +49,7 @@ export class Store {
    *  apply via the session's direct state.apply + emit, NOT commit — still
    *  flow, so a live viewer sees updates but can never author them. */
   readOnly = false
+  delegate?: StoreDelegate
 
   constructor(doc: BentoDoc) {
     this.doc = doc
@@ -76,6 +84,8 @@ export class Store {
    * ⌘Z restores the previous document wholesale.
    */
   replaceDoc(next: BentoDoc) {
+    if (this.readOnly) return
+    if (this.delegate) throw new Error('Open or import documents from bento/office.')
     this.checkpoint()
     this.doc = next
     this.currentIndex = 0
@@ -91,6 +101,7 @@ export class Store {
 
   /** Snapshot current doc state onto the undo stack. Call BEFORE a mutation. */
   checkpoint() {
+    if (this.readOnly || this.delegate) return
     this.undoStack.push({ doc: JSON.stringify(this.doc), view: this.captureView() })
     if (this.undoStack.length > MAX_UNDO) this.undoStack.shift()
     this.redoStack.length = 0
@@ -153,14 +164,40 @@ export class Store {
 
   /** Mark dirty and notify after an in-place mutation (no checkpoint). */
   touch(event: StoreEvent = 'doc') {
+    if (this.readOnly) return
     this.doc.modified = new Date().toISOString()
     this.setDirty(true)
     this.emit('doc')
     if (event !== 'doc') this.emit(event)
+    this.delegate?.changed(this.doc)
   }
 
-  undo() { this.restore(this.undoStack, this.redoStack) }
-  redo() { this.restore(this.redoStack, this.undoStack) }
+  undo() {
+    if (this.readOnly) return
+    if (this.delegate) { this.delegate.undo(); return }
+    this.restore(this.undoStack, this.redoStack)
+  }
+  redo() {
+    if (this.readOnly) return
+    if (this.delegate) { this.delegate.redo(); return }
+    this.restore(this.redoStack, this.undoStack)
+  }
+
+  /** Authoritative snapshot: no checkpoint, timestamp change or outgoing edit. */
+  adopt(next: BentoDoc) {
+    if (next.docId !== this.doc.docId || next.format !== this.doc.format || !next.slides.length) {
+      throw new Error('Invalid authoritative slide document.')
+    }
+    if (JSON.stringify(next) === JSON.stringify(this.doc)) return
+    const view = this.captureView()
+    const structure = JSON.stringify(this.doc.slides.map(s => s.id)) !== JSON.stringify(next.slides.map(s => s.id))
+    this.doc = structuredClone(next)
+    const { currentChanged, selectionChanged } = this.reconcileView(view)
+    this.emit('doc')
+    if (structure) this.emit('slides')
+    if (currentChanged) this.emit('current')
+    if (selectionChanged) this.emit('selection')
+  }
 
   private restore(from: HistoryEntry[], to: HistoryEntry[]) {
     const entry = from.pop()

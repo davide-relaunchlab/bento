@@ -126,8 +126,9 @@ const decorate = (b: Block, base: string): string => {
   return out;
 };
 
+const noteAttr = (id: string) => id.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const noteMarker = (id: string) =>
-  `<sup class="t-note" data-note="${id}" contenteditable="false">•</sup>`;
+  `<sup class="t-note" data-note="${noteAttr(id)}" contenteditable="false">•</sup>`;
 
 /** One block, as HTML. Marks become tags; note refs become atoms. */
 export function blockHtml(b: Block): string {

@@ -30,8 +30,47 @@ type Listener = (doc: TypeDoc) => void;
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
 const LIMIT = 200;
 
+export interface StoreDelegate {
+  changed(next: TypeDoc): void;
+  undo(): boolean;
+  redo(): boolean;
+  canUndo(): boolean;
+  canRedo(): boolean;
+}
+
+/** Reuse equivalent subtrees so an authoritative echo cannot invalidate an
+ * editor or panel closure that still holds a block or table reference. */
+function reconcile<T>(current: T, next: T): T {
+  if (JSON.stringify(current) === JSON.stringify(next)) return current;
+  if (Array.isArray(current) && Array.isArray(next)) {
+    const keyed = new Map(current.filter(x => x && typeof x === 'object' && 'id' in x).map(x => [x.id, x]));
+    return next.map((x, i) => reconcile(x && typeof x === 'object' && 'id' in x ? keyed.get(x.id) : current[i], x)) as T;
+  }
+  if (current && next && typeof current === 'object' && typeof next === 'object'
+      && !Array.isArray(current) && !Array.isArray(next)) {
+    const result: Record<string, unknown> = {};
+    for (const key of Object.keys(next)) result[key] = reconcile((current as Record<string, unknown>)[key], (next as Record<string, unknown>)[key]);
+    return result as T;
+  }
+  return next === undefined ? next : clone(next);
+}
+
 export class Store {
   #doc: TypeDoc;
+  delegate?: StoreDelegate;
+  #readOnly = false;
+  get readOnly(): boolean { return this.#readOnly; }
+  setReadOnly(value: boolean): void { this.#readOnly = value; }
+
+  /** Authoritative host adoption: no undo entry and no outbound edit. */
+  adopt(next: TypeDoc): boolean {
+    if (next.docId !== this.#doc.docId || next.format !== this.#doc.format) throw new Error('Document identity cannot change');
+    if (JSON.stringify(next) === JSON.stringify(this.#doc)) return false;
+    this.#doc = reconcile(this.#doc, next);
+    this.#run = null;
+    this.#emit();
+    return true;
+  }
   #undo: Snap[] = [];
   #redo: Snap[] = [];
   #listeners = new Set<Listener>();
@@ -41,8 +80,8 @@ export class Store {
   constructor(doc: TypeDoc) { this.#doc = doc; }
 
   get doc(): TypeDoc { return this.#doc; }
-  get canUndo(): boolean { return this.#undo.length > 0; }
-  get canRedo(): boolean { return this.#redo.length > 0; }
+  get canUndo(): boolean { return this.delegate ? !this.readOnly && this.delegate.canUndo() : this.#undo.length > 0; }
+  get canRedo(): boolean { return this.delegate ? !this.readOnly && this.delegate.canRedo() : this.#redo.length > 0; }
   /** depth, for diagnostics and for proving the scoped-snapshot claim */
   get undoDepth(): number { return this.#undo.length; }
 
@@ -70,6 +109,12 @@ export class Store {
    * five. Any commit without a run, or with a different one, closes the group.
    */
   commit(fn: (doc: TypeDoc) => void, opts: { scope?: Scope; run?: string } = {}): void {
+    if (this.readOnly) return;
+    if (this.delegate) {
+      fn(this.#doc);
+      try { this.delegate.changed(this.#doc); } finally { this.#emit(); }
+      return;
+    }
     const scope = opts.scope ?? 'doc';
     const run = opts.run ?? null;
     if (run === null || run !== this.#run) this.#push(this.#snap(scope));
@@ -90,10 +135,20 @@ export class Store {
    * make it revert a colleague's paragraph instead — while also making their
    * edit re-appear on redo, which is worse.
    */
-  touch(): void { this.#emit(); }
+  touch(): void {
+    if (this.readOnly) return;
+    try { this.delegate?.changed(this.#doc); } finally { this.#emit(); }
+  }
 
   /** Replace the whole document — loading a file, or restoring a revision. */
   replace(doc: TypeDoc): void {
+    if (this.readOnly) return;
+    if (this.delegate) {
+      if (doc.docId !== this.#doc.docId || doc.format !== this.#doc.format) throw new Error('Document identity cannot change');
+      this.#doc = clone(doc);
+      try { this.delegate.changed(this.#doc); } finally { this.#emit(); }
+      return;
+    }
     this.#push({ kind: 'doc', doc: clone(this.#doc) });
     this.#run = null;
     this.#doc = doc;
@@ -122,6 +177,8 @@ export class Store {
   }
 
   undo(): boolean {
+    if (this.readOnly) return false;
+    if (this.delegate) return this.delegate.undo();
     const s = this.#undo.pop();
     if (!s) return false;
     this.#redo.push(this.#apply(s));
@@ -131,6 +188,8 @@ export class Store {
   }
 
   redo(): boolean {
+    if (this.readOnly) return false;
+    if (this.delegate) return this.delegate.redo();
     const s = this.#redo.pop();
     if (!s) return false;
     this.#undo.push(this.#apply(s));

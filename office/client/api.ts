@@ -1,5 +1,5 @@
 import type { DashDoc } from '../../dash/src/model.ts';
-export type Snapshot={id:string;title:string;revision:number;role:'owner'|'editor'|'viewer';document:DashDoc;agentPermission:string|null};
+export type Snapshot<D=DashDoc>={id:string;title:string;revision:number;role:'owner'|'editor'|'viewer';document:D;agentPermission:string|null};
 export class HttpError extends Error {
   constructor(public status:number,public code:string,message:string,public details?:unknown){super(message);}
 }

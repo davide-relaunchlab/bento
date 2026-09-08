@@ -2,6 +2,7 @@ import { sqliteTable, text, integer, primaryKey, uniqueIndex, index } from 'driz
 
 export const workbooks = sqliteTable('workbooks', {
   id: text('id').primaryKey(), docId: text('doc_id').notNull(), title: text('title').notNull(),
+  format: text('format', { enum: ['bento/dash', 'bento/slides', 'bento/type'] }).notNull().default('bento/dash'),
   ownerId: text('owner_id').notNull(), revision: integer('revision').notNull().default(0),
   aclVersion: integer('acl_version').notNull().default(0), contentKey: text('content_key').notNull(),
   createdAt: integer('created_at').notNull(), updatedAt: integer('updated_at').notNull(),

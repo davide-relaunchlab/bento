@@ -6,6 +6,8 @@
 // updates, i18n) comes next — PLATFORM §10.
 
 import './styles.css';
+import { officeHost } from './officehost.ts';
+const host = officeHost();
 import { configureApp } from '../../kernel/src/app.ts';
 import {
   capturePristine, readEmbeddedDoc, saveFile, currentFileName, canWriteInPlace,
@@ -36,7 +38,7 @@ configureApp({
 // The pristine capture must happen BEFORE any DOM mutation: saves re-serialize
 // the captured clone, so anything the app injects afterwards (theme attributes,
 // the editor's rendered blocks, measuring probes) never reaches a saved file.
-capturePristine();
+if (!host) capturePristine();
 
 // Theme after the capture, for exactly that reason — `data-theme` is a viewer
 // preference and must not travel in the document.
@@ -71,7 +73,7 @@ function sampleDoc(): TypeDoc {
   return d;
 }
 
-const embedded = readEmbeddedDoc() ?? '';
+const embedded = host ? JSON.stringify(host.document) : readEmbeddedDoc() ?? '';
 const parsed = parseDoc(embedded);
 let doc: TypeDoc;
 let loadNote = '';
@@ -175,6 +177,14 @@ const deco = document.getElementById('deco')!;
 const statEl = document.getElementById('status')!;
 
 const store = new Store(doc);
+if (host) {
+  store.setReadOnly(host.readOnly);
+  store.delegate = {
+    changed: next => host.changed(next),
+    undo: () => host.undo(), redo: () => host.redo(),
+    canUndo: () => host.canUndo(), canRedo: () => host.canRedo(),
+  };
+}
 const editor = new Editor(paper, store);
 
 // ───────────────────────────────────────────────────── chrome: labels & icons
@@ -216,7 +226,7 @@ label('sign', ICONS.sign, '', t('Sign…'));
 label('print', ICONS.print, '', t('Print or PDF…'));
 label('about', ICONS.sync, '', t('About bento/type'));
 byId('mark').title = t('About bento/type — version, updates, language');
-const showAbout = () => openAbout({
+const showAbout = () => host ? host.about() : openAbout({
   store,
   pages: metrics.pages.length,
   onReplaceDoc: json => {
@@ -923,6 +933,11 @@ function paintTitle() {
 }
 
 async function save(forcePicker = false) {
+  if (host) {
+    if (forcePicker) await host.exportHTML(); else await host.save();
+    dirty = host.pending(); paintTitle();
+    return;
+  }
   const result = await saveFile(store.doc, forcePicker);
   if (result === 'cancelled') return;
   dirty = false;
@@ -938,7 +953,7 @@ addEventListener('keydown', (e) => {
 });
 // Leaving with unsaved work should cost a prompt. A document that edits itself
 // has no server-side copy to fall back on.
-addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+addEventListener('beforeunload', (e) => { if (host ? host.pending() : dirty) { e.preventDefault(); e.returnValue = ''; } });
 
 // ─────────────────────────────────────────────────────────────── printing
 //
@@ -996,7 +1011,7 @@ repaginate();
 dirty = false; paintTitle();
 
 // scripting surface, per PLATFORM §7
-(window as unknown as Record<string, unknown>).bento = {
+(window as unknown as Record<string, unknown>).bento = host ? host.api : {
   format: store.doc.format,
   get doc() { return store.doc; },
   store, editor,
@@ -1041,4 +1056,62 @@ for (const f of readyFns()) f(featureCtx);
 // Live collaboration (bento-sync) — dormant unless the doc carries collab
 // creds or the user opts in via the Share button; see src/collab.ts.
 import { initCollab } from './collab.ts';
-initCollab(store, editor);
+if (!host) initCollab(store, editor);
+else {
+  let composing = false;
+  let pointerDown = false;
+  document.addEventListener('compositionstart', () => { composing = true; });
+  document.addEventListener('compositionend', () => { composing = false; });
+  document.addEventListener('pointerdown', () => { pointerDown = true; }, true);
+  window.addEventListener('pointerup', () => { pointerDown = false; }, true);
+  window.addEventListener('pointercancel', () => { pointerDown = false; }, true);
+  window.addEventListener('blur', () => { pointerDown = false; });
+  const setReadOnly = (value: boolean) => {
+    store.setReadOnly(value);
+    paper.contentEditable = value ? 'false' : 'true';
+    titleInput.readOnly = value;
+    document.documentElement.classList.toggle('office-readonly', value);
+    for (const id of ['gFormat', 'gInsert', 'gReview', 'propsPanel', 'commentsHost', 'reviewPanel', 'redlinePanel', 'citeHost']) byId(id).inert = value;
+    for (const id of ['snap', 'sign', 'review']) byId<HTMLButtonElement>(id).disabled = value;
+    byId<HTMLButtonElement>('undo').disabled = value || !store.canUndo;
+    byId<HTMLButtonElement>('redo').disabled = value || !store.canRedo;
+  };
+  // Contenteditable descendants (table cells and feature overlays included)
+  // cannot get a browser mutation through even if they were mounted later.
+  document.addEventListener('beforeinput', e => {
+    if (store.readOnly && e.target instanceof HTMLElement && e.target.isContentEditable) e.preventDefault();
+  }, true);
+  setReadOnly(host.readOnly);
+  host.attach({
+    // Queue receipts change Save/Undo availability without changing the paper.
+    stateChanged: () => {
+      dirty = host.pending();
+      paintTitle();
+      setReadOnly(store.readOnly);
+    },
+    read: () => structuredClone(store.doc),
+    adopt: next => {
+      if (next.format !== 'bento/type') throw new Error('Wrong editor format');
+      const focused = document.activeElement;
+      const caret = editor.caret();
+      const wasInPaper = focused === paper || !!focused && paper.contains(focused);
+      const scroll = paper.closest('.t-scroll');
+      const top = scroll?.scrollTop ?? 0, left = scroll?.scrollLeft ?? 0;
+      if (store.adopt(next as TypeDoc)) {
+        editor.render();
+        if (wasInPaper) editor.setCaret(caret);
+        if (scroll) { scroll.scrollTop = top; scroll.scrollLeft = left; }
+        schedule();
+      }
+      dirty = host.pending(); paintTitle();
+      setReadOnly(store.readOnly);
+    },
+    setReadOnly,
+    isEditing: () => {
+      const active = document.activeElement;
+      return composing || pointerDown || !!active && (active instanceof HTMLInputElement
+        || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement
+        || (active instanceof HTMLElement && active.isContentEditable));
+    },
+  });
+}

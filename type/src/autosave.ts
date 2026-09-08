@@ -28,6 +28,7 @@
 //
 // Registered once, at import time, mirroring every other feature module.
 
+import { officeHost } from './officehost.ts';
 import { isEncryptionActive } from '../../kernel/src/save.ts';
 import {
   putRecovery, getRecovery, clearRecovery, addVersion, listVersions, pruneOld,
@@ -162,6 +163,7 @@ function showRecoveryBanner(ctx: FeatureContext, snap: Snapshot, recovered: Type
 }
 
 function wireAutosave(ctx: FeatureContext): void {
+  if (officeHost()) return;
   if (ctx.store.doc.readonly) return; // a player file has nothing to protect
   void pruneOld();
   void checkRecovery(ctx);

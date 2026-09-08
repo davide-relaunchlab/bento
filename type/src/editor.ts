@@ -39,7 +39,7 @@ export class Editor {
   constructor(host: HTMLElement, store: Store) {
     this.host = host;
     this.store = store;
-    host.contentEditable = 'true';
+    host.contentEditable = store.readOnly ? 'false' : 'true';
     host.spellcheck = true;
     this.render();
     host.addEventListener('beforeinput', this.#beforeInput);
@@ -142,6 +142,7 @@ export class Editor {
   #runId: string | null = null;
 
   #input = (): void => {
+    if (this.store.readOnly) { this.render(); return; }
     const c = this.caret();
     if (!c) return;
     const el = this.#el(c.id);
@@ -200,6 +201,7 @@ export class Editor {
    * split is intercepted and the new block gets a fresh id here.
    */
   #beforeInput = (e: InputEvent): void => {
+    if (this.store.readOnly) { e.preventDefault(); return; }
     const c = this.caret();
     if (!c) return;
     if (e.inputType === 'insertParagraph') {
@@ -483,6 +485,7 @@ export class Editor {
   // ───────────────────────────────────────────────────────────── keys
 
   #keydown = (e: KeyboardEvent): void => {
+    if (this.store.readOnly) return;
     // Tab indents a list item. It is NOT swallowed elsewhere: in a document
     // that is not a list, Tab must still move focus out of the editor, which is
     // the only way a keyboard user leaves it.

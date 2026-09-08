@@ -149,6 +149,7 @@ export class PropsPanel {
 
   /** checkpoint once per burst of continuous input, commit on change. */
   private edit(mutate: () => void, final: boolean) {
+    if (this.store.readOnly) return
     if (!this.burst) {
       this.store.checkpoint()
       this.burst = true

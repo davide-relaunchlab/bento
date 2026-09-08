@@ -73,8 +73,8 @@ export const embedOf = (b: Block): EmbedData | undefined => {
  * rejected embed still shows its placeholder and its source is still there, so
  * nothing is lost but the picture.
  */
-const BANNED = /<\s*(script|iframe|object|embed|foreignObject|link|meta|style)\b/i;
-const HANDLER = /\son[a-z]+\s*=/i;
+const BANNED = /<\s*(script|iframe|object|embed|foreignObject|link|meta|style|animate|animateMotion|animateTransform|set)\b/i;
+const HANDLER = /[\s/]on[a-z]+\s*=/i;
 // ALLOW-LIST, not a block-list. The first version enumerated the schemes to
 // refuse — https:, //, a non-image data: — and so let `javascript:alert(1)`
 // straight through, because it was not on the list. Naming the bad things is a
@@ -121,7 +121,15 @@ export function renderEmbed(b: Block): HTMLElement {
   } else {
     const box = document.createElement('div');
     box.className = 't-embed-view';
-    box.innerHTML = view;
+    // A static preview is an IMAGE, never live author-supplied DOM. Browser
+    // SVG image mode disables scripts, event handlers and external resources.
+    // Keep this boundary even when safeView's lightweight refusal accepts new
+    // syntax: a regex is not an HTML/SVG parser.
+    const image = document.createElement('img');
+    image.alt = '';
+    image.addEventListener('load', () => host.dispatchEvent(new CustomEvent('t-relayout', {bubbles:true})), {once:true});
+    image.src = svgImage(view);
+    box.appendChild(image);
     host.appendChild(box);
   }
 
@@ -149,6 +157,13 @@ function placeholder(text: string): HTMLElement {
   return p;
 }
 
+const svgImage = (view: string) => {
+  // Inline HTML supplied the SVG namespace implicitly; an image is XML.
+  const xml = /^<svg\b[^>]*\sxmlns\s*=/i.test(view)
+    ? view : view.replace(/^<svg(?=[\s>])/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+};
+
 /** The embed as plain HTML — for print and for the static first-page preview. */
 export function embedHtml(b: Block): string {
   const e = embedOf(b);
@@ -157,7 +172,7 @@ export function embedHtml(b: Block): string {
   const cap = `From ${APPS[e.app] ?? e.app}`;
   return `<figure class="t-embed" data-id="${esc(b.id)}" data-atomic="1">`
     + (view === null ? `<div class="t-embed-missing">${esc('This embed could not be displayed safely.')}</div>`
-                     : `<div class="t-embed-view">${view}</div>`)
+                     : `<div class="t-embed-view"><img alt="" src="${esc(svgImage(view))}"></div>`)
     + `<figcaption>${esc(cap)}</figcaption></figure>`;
 }
 

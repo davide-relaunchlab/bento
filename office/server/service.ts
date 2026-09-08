@@ -1,5 +1,5 @@
-import type { DashDoc } from '../../dash/src/model.ts';
-import { applyPrepared, prepareChange, newWorkbook, validateWorkbook, digest, OfficeError, type PreparedChange } from '../shared/changes.ts';
+import type { OfficeDocument } from '../shared/content.ts';
+import { applyPrepared, prepareChange, newWorkbook, validateWorkbook, digest, OfficeError, type PreparedChange } from '../shared/content.ts';
 import { authorize, accessCondition, personOnly, type Actor, type WorkbookRow } from './access.ts';
 import { Storage } from './storage.ts';
 
@@ -20,27 +20,28 @@ export class Office {
     const rows=await this.db.all<WorkbookRow&{role:string}>('SELECT w.*,m.role FROM workbooks w JOIN members m ON m.workbook_id=w.id WHERE m.user_id=? ORDER BY w.updated_at DESC LIMIT 200',[this.actor.userId]);
     return rows.map(row=>({...this.metadata(row),role:row.role}));
   }
-  metadata(w:WorkbookRow) { return {id:w.id,docId:w.doc_id,title:w.title,revision:w.revision,updatedAt:w.updated_at,createdAt:w.created_at}; }
-  async snapshot(id:string,revision:number):Promise<DashDoc> {
+  metadata(w:WorkbookRow) { return {id:w.id,docId:w.doc_id,title:w.title,format:w.format,revision:w.revision,updatedAt:w.updated_at,createdAt:w.created_at}; }
+  async snapshot(id:string,revision:number):Promise<OfficeDocument> {
     const row=await this.db.one<{content_key:string}>('SELECT content_key FROM changes WHERE workbook_id=? AND revision=?',[id,revision]);
-    if(!row)throw new OfficeError('unknown_revision','Versione non disponibile. Rileggi il foglio.',409);
-    return this.db.json<DashDoc>(row.content_key);
+    if(!row)throw new OfficeError('unknown_revision','Versione non disponibile. Rileggi il documento.',409);
+    return this.db.json<OfficeDocument>(row.content_key);
   }
   async get(id:string,revision?:number) {
     const a=await authorize(this.db,this.actor,id),w=a.workbook;
     return {...this.metadata(w),revision:revision??w.revision,currentRevision:w.revision,role:a.role,agentPermission:a.actor.token?.permission??null,
-      document:revision===undefined?await this.db.json<DashDoc>(w.content_key):await this.snapshot(id,revision)};
+      document:revision===undefined?await this.db.json<OfficeDocument>(w.content_key):await this.snapshot(id,revision)};
   }
-  async create(title:string,document?:unknown) {
+  async create(title:string,document?:unknown,format?:OfficeDocument['format']) {
     personOnly(this.actor);
-    const doc=validateWorkbook(document??newWorkbook(title)),id=crypto.randomUUID(),now=Date.now(),changeId=crypto.randomUUID();
+    const doc=validateWorkbook(document??newWorkbook(title,format)),id=crypto.randomUUID(),now=Date.now(),changeId=crypto.randomUUID();
+    if(format && doc.format!==format)throw new OfficeError('invalid_format','Il formato del documento non corrisponde al tipo richiesto.',400);
     doc.modified=new Date(now).toISOString();
     const key=await this.db.put(doc);
     try {
       await this.db.env.DB.batch([
-        this.db.statement('INSERT INTO workbooks(id,doc_id,title,owner_id,revision,acl_version,content_key,created_at,updated_at) VALUES(?,?,?,?,0,0,?,?,?)',[id,doc.docId,doc.title,this.actor.userId,key,now,now]),
+        this.db.statement('INSERT INTO workbooks(id,doc_id,title,format,owner_id,revision,acl_version,content_key,created_at,updated_at) VALUES(?,?,?,?,?,0,0,?,?,?)',[id,doc.docId,doc.title,doc.format,this.actor.userId,key,now,now]),
         this.db.statement('INSERT INTO members(id,workbook_id,user_id,email,display_name,role,created_at) VALUES(?,?,?,?,?,?,?)',[crypto.randomUUID(),id,this.actor.userId,this.actor.email!,this.actor.name,'owner',now]),
-        this.db.statement('INSERT INTO changes(workbook_id,revision,id,operation_id,request_hash,content_key,actor_id,actor_name,actor_kind,summary,kind,created_at) VALUES(?,0,?,?,?,?,?,?,?,?,?,?)',[id,changeId,'create','create',key,this.actor.id,this.actor.name,this.actor.kind,'Crea foglio','create',now]),
+        this.db.statement('INSERT INTO changes(workbook_id,revision,id,operation_id,request_hash,content_key,actor_id,actor_name,actor_kind,summary,kind,created_at) VALUES(?,0,?,?,?,?,?,?,?,?,?,?)',[id,changeId,'create','create',key,this.actor.id,this.actor.name,this.actor.kind,'Crea documento','create',now]),
       ]);
     } catch(error) { await this.db.discardUnreferenced([key]);throw error; }
     return this.get(id);
@@ -66,10 +67,11 @@ export class Office {
         const proposal=await this.db.one<ProposalRow>('SELECT * FROM proposals WHERE workbook_id=? AND id=?',[id,relatedId]);
         if(!proposal||proposal.status!=='pending')throw conflict();
       }
-      const w=access.workbook,current=await this.db.json<DashDoc>(w.content_key);
+      const w=access.workbook,current=await this.db.json<OfficeDocument>(w.content_key);
       // Check the author's original read before rebasing the inverse onto the
       // actual committed state. Neither guard list is accepted from HTTP.
       const document=await applyPrepared(current,original,kind==='undo'?'undo':'forward');
+      if(document.docId!==current.docId || document.format!==current.format || document.format!==w.format)throw new OfficeError('invalid_identity','Identità e formato del documento non possono cambiare.',400);
       const now=Date.now();document.modified=new Date(now).toISOString();
       const prepared=await prepareChange(current,kind==='undo'?original.inverse:original.patches);
       const [contentKey,preparedKey]=await Promise.all([this.db.put(document),this.db.put(prepared)]);
@@ -163,7 +165,7 @@ export class Office {
   async share(id:string,email:string,role:'editor'|'viewer') {
     const access=await authorize(this.db,this.actor,id,'manage'),condition=accessCondition(access),memberId=crypto.randomUUID(),now=Date.now();
     const current=await this.db.one<{role:string}>('SELECT role FROM members WHERE workbook_id=? AND email=?',[id,email]);
-    if(current?.role==='owner')throw new OfficeError('owner_role','Il proprietario mantiene il controllo del foglio.',400);
+    if(current?.role==='owner')throw new OfficeError('owner_role','Il proprietario mantiene il controllo del documento.',400);
     const r=await this.db.env.DB.batch([
       this.db.statement(`INSERT INTO members(id,workbook_id,email,display_name,role,created_at) SELECT ?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM workbooks WHERE ${condition.sql}) ON CONFLICT(workbook_id,email) DO UPDATE SET role=excluded.role`,[memberId,id,email,email,role,now,...condition.args]),
       this.db.statement(`UPDATE workbooks SET acl_version=acl_version+1 WHERE ${condition.sql}`,condition.args),

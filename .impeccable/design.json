@@ -1,21 +1,21 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-08T11:58:13.885563+00:00",
-  "title": "Design System: bento/office dashboard",
+  "generatedAt": "2026-09-08T13:37:08.564702+00:00",
+  "title": "Design System: dowitme — dashboard e chrome ospitata",
   "extensions": {
     "colorMeta": {
       "home-bg": {
         "role": "neutral",
         "displayName": "home-bg",
         "tonalRamp": [
-          "oklch(15% 0.00541 274.97)",
-          "oklch(26% 0.00541 274.97)",
-          "oklch(38% 0.00541 274.97)",
-          "oklch(49% 0.00541 274.97)",
-          "oklch(61% 0.00541 274.97)",
-          "oklch(72% 0.00541 274.97)",
-          "oklch(84% 0.00541 274.97)",
-          "oklch(95% 0.00541 274.97)"
+          "oklch(15% 0.00621 75.41)",
+          "oklch(26% 0.00621 75.41)",
+          "oklch(38% 0.00621 75.41)",
+          "oklch(49% 0.00621 75.41)",
+          "oklch(61% 0.00621 75.41)",
+          "oklch(72% 0.00621 75.41)",
+          "oklch(84% 0.00621 75.41)",
+          "oklch(95% 0.00621 75.41)"
         ]
       },
       "home-surface": {
@@ -36,70 +36,70 @@
         "role": "neutral",
         "displayName": "home-ink",
         "tonalRamp": [
-          "oklch(15% 0.04875 264.07)",
-          "oklch(26% 0.04875 264.07)",
-          "oklch(38% 0.04875 264.07)",
-          "oklch(49% 0.04875 264.07)",
-          "oklch(61% 0.04875 264.07)",
-          "oklch(72% 0.04875 264.07)",
-          "oklch(84% 0.04875 264.07)",
-          "oklch(95% 0.04875 264.07)"
+          "oklch(15% 0.04141 304.78)",
+          "oklch(26% 0.04141 304.78)",
+          "oklch(38% 0.04141 304.78)",
+          "oklch(49% 0.04141 304.78)",
+          "oklch(61% 0.04141 304.78)",
+          "oklch(72% 0.04141 304.78)",
+          "oklch(84% 0.04141 304.78)",
+          "oklch(95% 0.04141 304.78)"
         ]
       },
       "home-muted": {
         "role": "neutral",
         "displayName": "home-muted",
         "tonalRamp": [
-          "oklch(15% 0.04173 264.88)",
-          "oklch(26% 0.04173 264.88)",
-          "oklch(38% 0.04173 264.88)",
-          "oklch(49% 0.04173 264.88)",
-          "oklch(61% 0.04173 264.88)",
-          "oklch(72% 0.04173 264.88)",
-          "oklch(84% 0.04173 264.88)",
-          "oklch(95% 0.04173 264.88)"
+          "oklch(15% 0.03633 307.70)",
+          "oklch(26% 0.03633 307.70)",
+          "oklch(38% 0.03633 307.70)",
+          "oklch(49% 0.03633 307.70)",
+          "oklch(61% 0.03633 307.70)",
+          "oklch(72% 0.03633 307.70)",
+          "oklch(84% 0.03633 307.70)",
+          "oklch(95% 0.03633 307.70)"
         ]
       },
       "home-line": {
         "role": "neutral",
         "displayName": "home-line",
         "tonalRamp": [
-          "oklch(15% 0.01331 262.38)",
-          "oklch(26% 0.01331 262.38)",
-          "oklch(38% 0.01331 262.38)",
-          "oklch(49% 0.01331 262.38)",
-          "oklch(61% 0.01331 262.38)",
-          "oklch(72% 0.01331 262.38)",
-          "oklch(84% 0.01331 262.38)",
-          "oklch(95% 0.01331 262.38)"
+          "oklch(15% 0.01702 316.93)",
+          "oklch(26% 0.01702 316.93)",
+          "oklch(38% 0.01702 316.93)",
+          "oklch(49% 0.01702 316.93)",
+          "oklch(61% 0.01702 316.93)",
+          "oklch(72% 0.01702 316.93)",
+          "oklch(84% 0.01702 316.93)",
+          "oklch(95% 0.01702 316.93)"
         ]
       },
       "home-blue": {
         "role": "primary",
         "displayName": "home-blue",
         "tonalRamp": [
-          "oklch(15% 0.18864 265.09)",
-          "oklch(26% 0.18864 265.09)",
-          "oklch(38% 0.18864 265.09)",
-          "oklch(49% 0.18864 265.09)",
-          "oklch(61% 0.18864 265.09)",
-          "oklch(72% 0.18864 265.09)",
-          "oklch(84% 0.18864 265.09)",
-          "oklch(95% 0.18864 265.09)"
+          "oklch(15% 0.11771 301.24)",
+          "oklch(26% 0.11771 301.24)",
+          "oklch(38% 0.11771 301.24)",
+          "oklch(49% 0.11771 301.24)",
+          "oklch(61% 0.11771 301.24)",
+          "oklch(72% 0.11771 301.24)",
+          "oklch(84% 0.11771 301.24)",
+          "oklch(95% 0.11771 301.24)"
         ]
       },
       "home-blue-bg": {
         "role": "primary",
         "displayName": "home-blue-bg",
         "tonalRamp": [
-          "oklch(15% 0.01824 269.09)",
-          "oklch(26% 0.01824 269.09)",
-          "oklch(38% 0.01824 269.09)",
-          "oklch(49% 0.01824 269.09)",
-          "oklch(61% 0.01824 269.09)",
-          "oklch(72% 0.01824 269.09)",
-          "oklch(84% 0.01824 269.09)",
-          "oklch(95% 0.01824 269.09)"
+          "oklch(15% 0.01969 305.26)",
+          "oklch(26% 0.01969 305.26)",
+          "oklch(38% 0.01969 305.26)",
+          "oklch(49% 0.01969 305.26)",
+          "oklch(61% 0.01969 305.26)",
+          "oklch(72% 0.01969 305.26)",
+          "oklch(84% 0.01969 305.26)",
+          "oklch(95% 0.01969 305.26)"
         ]
       },
       "home-green": {
@@ -162,14 +162,112 @@
         "role": "primary",
         "displayName": "home-focus",
         "tonalRamp": [
-          "oklch(15% 0.19441 265.99)",
-          "oklch(26% 0.19441 265.99)",
-          "oklch(38% 0.19441 265.99)",
-          "oklch(49% 0.19441 265.99)",
-          "oklch(61% 0.19441 265.99)",
-          "oklch(72% 0.19441 265.99)",
-          "oklch(84% 0.19441 265.99)",
-          "oklch(95% 0.19441 265.99)"
+          "oklch(15% 0.14183 304.45)",
+          "oklch(26% 0.14183 304.45)",
+          "oklch(38% 0.14183 304.45)",
+          "oklch(49% 0.14183 304.45)",
+          "oklch(61% 0.14183 304.45)",
+          "oklch(72% 0.14183 304.45)",
+          "oklch(84% 0.14183 304.45)",
+          "oklch(95% 0.14183 304.45)"
+        ]
+      },
+      "brand-apricot": {
+        "role": "secondary",
+        "displayName": "brand-apricot",
+        "tonalRamp": [
+          "oklch(15% 0.11661 57.26)",
+          "oklch(26% 0.11661 57.26)",
+          "oklch(38% 0.11661 57.26)",
+          "oklch(49% 0.11661 57.26)",
+          "oklch(61% 0.11661 57.26)",
+          "oklch(72% 0.11661 57.26)",
+          "oklch(84% 0.11661 57.26)",
+          "oklch(95% 0.11661 57.26)"
+        ]
+      },
+      "chrome-surface": {
+        "role": "neutral",
+        "displayName": "chrome-surface",
+        "tonalRamp": [
+          "oklch(15% 0.00340 67.78)",
+          "oklch(26% 0.00340 67.78)",
+          "oklch(38% 0.00340 67.78)",
+          "oklch(49% 0.00340 67.78)",
+          "oklch(61% 0.00340 67.78)",
+          "oklch(72% 0.00340 67.78)",
+          "oklch(84% 0.00340 67.78)",
+          "oklch(95% 0.00340 67.78)"
+        ]
+      },
+      "chrome-panel": {
+        "role": "neutral",
+        "displayName": "chrome-panel",
+        "tonalRamp": [
+          "oklch(15% 0.01236 317.74)",
+          "oklch(26% 0.01236 317.74)",
+          "oklch(38% 0.01236 317.74)",
+          "oklch(49% 0.01236 317.74)",
+          "oklch(61% 0.01236 317.74)",
+          "oklch(72% 0.01236 317.74)",
+          "oklch(84% 0.01236 317.74)",
+          "oklch(95% 0.01236 317.74)"
+        ]
+      },
+      "creation-green": {
+        "role": "secondary",
+        "displayName": "creation-green",
+        "tonalRamp": [
+          "oklch(15% 0.07526 166.03)",
+          "oklch(26% 0.07526 166.03)",
+          "oklch(38% 0.07526 166.03)",
+          "oklch(49% 0.07526 166.03)",
+          "oklch(61% 0.07526 166.03)",
+          "oklch(72% 0.07526 166.03)",
+          "oklch(84% 0.07526 166.03)",
+          "oklch(95% 0.07526 166.03)"
+        ]
+      },
+      "creation-green-bg": {
+        "role": "secondary",
+        "displayName": "creation-green-bg",
+        "tonalRamp": [
+          "oklch(15% 0.00841 168.75)",
+          "oklch(26% 0.00841 168.75)",
+          "oklch(38% 0.00841 168.75)",
+          "oklch(49% 0.00841 168.75)",
+          "oklch(61% 0.00841 168.75)",
+          "oklch(72% 0.00841 168.75)",
+          "oklch(84% 0.00841 168.75)",
+          "oklch(95% 0.00841 168.75)"
+        ]
+      },
+      "creation-orange": {
+        "role": "tertiary",
+        "displayName": "creation-orange",
+        "tonalRamp": [
+          "oklch(15% 0.10998 50.41)",
+          "oklch(26% 0.10998 50.41)",
+          "oklch(38% 0.10998 50.41)",
+          "oklch(49% 0.10998 50.41)",
+          "oklch(61% 0.10998 50.41)",
+          "oklch(72% 0.10998 50.41)",
+          "oklch(84% 0.10998 50.41)",
+          "oklch(95% 0.10998 50.41)"
+        ]
+      },
+      "creation-orange-bg": {
+        "role": "tertiary",
+        "displayName": "creation-orange-bg",
+        "tonalRamp": [
+          "oklch(15% 0.02469 65.59)",
+          "oklch(26% 0.02469 65.59)",
+          "oklch(38% 0.02469 65.59)",
+          "oklch(49% 0.02469 65.59)",
+          "oklch(61% 0.02469 65.59)",
+          "oklch(72% 0.02469 65.59)",
+          "oklch(84% 0.02469 65.59)",
+          "oklch(95% 0.02469 65.59)"
         ]
       }
     },
@@ -229,7 +327,7 @@
       "refersTo": "button-primary",
       "description": "Conferma nei form della dashboard.",
       "html": "<button class=\"ds-button-primary\">Crea</button>",
-      "css": ".ds-button-primary{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;border:0;border-radius:8px;background:var(--home-blue,#305bd1);color:white;padding:11px 18px;font-size:12px;font-weight:700;cursor:pointer}.ds-button-primary:hover{background:#244bad}.ds-button-primary:disabled{opacity:.5;cursor:not-allowed}.ds-button-primary:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+      "css": ".ds-button-primary{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;border:0;border-radius:12px;background:var(--home-blue,#503178);color:white;padding:11px 18px;font-size:12px;font-weight:700;cursor:pointer}.ds-button-primary:hover{background:#3d235c}.ds-button-primary:disabled{opacity:.5;cursor:not-allowed}.ds-button-primary:focus-visible{outline:3px solid var(--home-focus,#71459e);outline-offset:3px;}"
     },
     {
       "name": "Azione testuale",
@@ -237,7 +335,7 @@
       "refersTo": "text-action",
       "description": "Azione secondaria di sezione.",
       "html": "<button class=\"ds-text-action\">Nuova cartella</button>",
-      "css": ".ds-text-action{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:transparent;padding:8px 6px;color:var(--home-muted,#65718a);font-size:11px;font-weight:600;border-radius:6px;white-space:nowrap;cursor:pointer}.ds-text-action:hover{color:var(--home-blue,#305bd1);background:var(--home-blue-bg,#edf2ff)}.ds-text-action:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+      "css": ".ds-text-action{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:transparent;padding:8px 6px;color:var(--home-muted,#72677d);font-size:11px;font-weight:600;border-radius:6px;white-space:nowrap;cursor:pointer}.ds-text-action:hover{color:var(--home-blue,#503178);background:var(--home-blue-bg,#f0eaf8)}.ds-text-action:focus-visible{outline:3px solid var(--home-focus,#71459e);outline-offset:3px;}"
     },
     {
       "name": "Azione icona",
@@ -245,7 +343,7 @@
       "refersTo": "icon-action",
       "description": "Controllo compatto con nome accessibile.",
       "html": "<button class=\"ds-icon-action\" aria-label=\"Chiudi\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 6 12 12M6 18 18 6\"/></svg></button>",
-      "css": ".ds-icon-action{display:inline-grid;place-items:center;width:32px;height:32px;padding:6px;border:0;border-radius:7px;background:transparent;color:var(--home-muted,#65718a);cursor:pointer}.ds-icon-action svg{width:17px;height:17px}.ds-icon-action:hover{background:#e6ecf8;color:var(--home-blue,#305bd1)}.ds-icon-action:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+      "css": ".ds-icon-action{display:inline-grid;place-items:center;width:32px;height:32px;padding:6px;border:0;border-radius:7px;background:transparent;color:var(--home-muted,#72677d);cursor:pointer}.ds-icon-action svg{width:17px;height:17px}.ds-icon-action:hover{background:#efe6f6;color:var(--home-blue,#503178)}.ds-icon-action:focus-visible{outline:3px solid var(--home-focus,#71459e);outline-offset:3px;}"
     },
     {
       "name": "Campo del modulo",
@@ -253,7 +351,7 @@
       "refersTo": "input",
       "description": "Campo di denominazione; il sorgente non definisce uno stato hover dedicato.",
       "html": "<input class=\"ds-input\" aria-label=\"Nome cartella\" placeholder=\"Nome cartella\">",
-      "css": ".ds-input{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;border:1px solid var(--home-line,#e3e8f1);background:white;border-radius:7px;color:var(--home-ink,#202c45);padding:10px 12px;font-size:12px;caret-color:var(--home-blue,#305bd1)}.ds-input:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+      "css": ".ds-input{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;border:1px solid var(--home-line,#e9e1ec);background:white;border-radius:7px;color:var(--home-ink,#30263c);padding:10px 12px;font-size:12px;caret-color:var(--home-blue,#503178)}.ds-input:focus-visible{outline:3px solid var(--home-focus,#71459e);outline-offset:3px;}"
     },
     {
       "name": "Navigazione selezionata",
@@ -261,7 +359,7 @@
       "refersTo": "navigation-active",
       "description": "Voce attiva; il suo hover mantiene il tono selezionato.",
       "html": "<nav aria-label=\"Spazio di lavoro\"><button class=\"ds-navigation-active\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1ZM9 21v-8h6v8\"/></svg>I miei file</button></nav>",
-      "css": ".ds-navigation-active{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:0;border-radius:9px;background:var(--home-blue-bg,#edf2ff);color:var(--home-blue,#305bd1);text-align:left;font-size:12px;font-weight:600;cursor:pointer}.ds-navigation-active svg{width:19px;height:19px;flex:none}.ds-navigation-active:hover{background:var(--home-blue-bg,#edf2ff);color:var(--home-blue,#305bd1)}.ds-navigation-active:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+      "css": ".ds-navigation-active{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:0;border-radius:14px;background:var(--home-blue-bg,#f0eaf8);color:var(--home-blue,#503178);text-align:left;font-size:12px;font-weight:750;cursor:pointer}.ds-navigation-active svg{width:19px;height:19px;flex:none}.ds-navigation-active:hover{background:var(--home-blue-bg,#f0eaf8);color:var(--home-blue,#503178)}.ds-navigation-active:focus-visible{outline:3px solid var(--home-focus,#71459e);outline-offset:3px;}"
     },
     {
       "name": "Filtro di formato",
@@ -269,7 +367,7 @@
       "refersTo": "filter",
       "description": "Filtro selezionato; nessun hover dedicato nel sorgente.",
       "html": "<button class=\"ds-filter\" aria-pressed=\"true\"><i></i>Fogli di calcolo</button>",
-      "css": ".ds-filter{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;gap:6px;border:0;border-radius:7px;background:none;color:var(--home-muted,#65718a);padding:8px 10px;font-size:11px;font-weight:600;cursor:pointer}.ds-filter[aria-pressed=true]{background:#e7edf9;color:#2b4a8d}.ds-filter i{width:6px;height:6px;border-radius:50%;background:var(--home-green,#167354)}.ds-filter:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+      "css": ".ds-filter{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;gap:6px;border:0;border-radius:10px;background:none;color:var(--home-muted,#72677d);padding:8px 10px;font-size:11px;font-weight:600;cursor:pointer}.ds-filter[aria-pressed=true]{background:#eaddf4;color:#503178}.ds-filter i{width:6px;height:6px;border-radius:50%;background:var(--home-green,#167354)}.ds-filter:focus-visible{outline:3px solid var(--home-focus,#71459e);outline-offset:3px;}"
     },
     {
       "name": "Cartella",
@@ -277,7 +375,7 @@
       "refersTo": "folder",
       "description": "Cartella compatta; dati solo illustrativi.",
       "html": "<button class=\"ds-folder\"><svg viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\"/></svg><span><strong>Progetto</strong><small>3 file</small></span></button>",
-      "css": ".ds-folder{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;gap:13px;min-width:0;padding:17px 16px;border:1px solid var(--home-line,#e3e8f1);border-radius:12px;background:var(--home-surface,#fff);color:var(--home-ink,#202c45);text-align:left;cursor:pointer}.ds-folder:hover{border-color:#aebbd3;background:#fcfdff}.ds-folder svg{width:27px;height:27px;color:#a57736;fill:#fff0d8;flex:none}.ds-folder span{min-width:0}.ds-folder strong{font-size:12px;display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.ds-folder small{display:block;font-size:10px;color:var(--home-muted,#65718a);margin-top:5px}.ds-folder:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+      "css": ".ds-folder{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;gap:13px;min-width:0;padding:17px 16px;border:1px solid var(--home-line,#e9e1ec);border-radius:14px;background:#fffdfb;color:var(--home-ink,#30263c);text-align:left;cursor:pointer}.ds-folder:hover{border-color:#aebbd3;background:#fcfdff}.ds-folder svg{width:27px;height:27px;color:#a57736;fill:#fff0d8;flex:none}.ds-folder span{min-width:0}.ds-folder strong{font-size:12px;display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.ds-folder small{display:block;font-size:10px;color:var(--home-muted,#72677d);margin-top:5px}.ds-folder:focus-visible{outline:3px solid var(--home-focus,#71459e);outline-offset:3px;}"
     },
     {
       "name": "Creazione foglio",
@@ -285,12 +383,12 @@
       "refersTo": "create-spreadsheet",
       "description": "Esempio desktop della famiglia di creazione; SVG estratto dal sorgente, testo dimostrativo non collegato ai cataloghi.",
       "html": "<button class=\"ds-create-spreadsheet\"><svg class=\"ds-paper\" viewBox=\"0 0 48 56\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path fill=\"white\" stroke=\"none\" d=\"M8 2h23l11 11v39a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z\"/><path fill=\"currentColor\" fill-opacity=\".14\" stroke=\"none\" d=\"M31 2v9a2 2 0 0 0 2 2h9\"/><rect x=\"14\" y=\"24\" width=\"20\" height=\"18\" rx=\"1\"/><path d=\"M14 30h20M14 36h20M21 24v18M27 24v18\"/></svg><span><strong>Nuovo foglio</strong><small>Turn numbers into answers.</small></span><span class=\"ds-plus\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg></span></button>",
-      "css": ".ds-create-spreadsheet{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;position:relative;text-align:left;display:flex;align-items:center;gap:17px;padding:25px 22px;min-height:132px;border:1px solid transparent;border-radius:14px;overflow:hidden;background:var(--home-green-bg,#eaf7f0);color:var(--home-green,#167354);cursor:pointer}.ds-create-spreadsheet:hover{border-color:var(--home-green,#167354)}.ds-create-spreadsheet .ds-paper{width:51px;height:60px;flex:none}.ds-create-spreadsheet strong{font-size:15px;line-height:1.5;display:block;font-weight:750}.ds-create-spreadsheet small{display:block;font-size:10px;line-height:1.6;margin-top:5px;opacity:.95}.ds-create-spreadsheet .ds-plus{position:absolute;right:14px;top:12px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#ffffffa8}.ds-create-spreadsheet .ds-plus svg{width:14px;height:14px}.ds-create-spreadsheet:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:no-preference){.ds-create-spreadsheet{transition:background-color .18s ease,border-color .18s ease,transform .18s cubic-bezier(.16,1,.3,1)}.ds-create-spreadsheet:not(:disabled):hover{transform:translateY(-3px)}}.ds-create-spreadsheet:focus-visible{outline:3px solid var(--home-focus,#335bd6);outline-offset:3px;}"
+      "css": ".ds-create-spreadsheet{font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;position:relative;text-align:left;display:flex;align-items:center;gap:17px;padding:25px 22px;min-height:132px;border:1px solid transparent;border-radius:16px;overflow:hidden;background:#edf4f1;color:#26654e;cursor:pointer}.ds-create-spreadsheet:hover{border-color:var(--home-green,#167354)}.ds-create-spreadsheet .ds-paper{width:51px;height:60px;flex:none}.ds-create-spreadsheet strong{font-size:15px;line-height:1.5;display:block;font-weight:750}.ds-create-spreadsheet small{display:block;font-size:10px;line-height:1.6;margin-top:5px;opacity:.95}.ds-create-spreadsheet .ds-plus{position:absolute;right:14px;top:12px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#ffffffa8}.ds-create-spreadsheet .ds-plus svg{width:14px;height:14px}.ds-create-spreadsheet:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:no-preference){.ds-create-spreadsheet{transition:background-color .18s ease,border-color .18s ease,transform .18s cubic-bezier(.16,1,.3,1)}.ds-create-spreadsheet:not(:disabled):hover{transform:translateY(-3px)}}.ds-create-spreadsheet:focus-visible{outline:3px solid var(--home-focus,#71459e);outline-offset:3px;}"
     }
   ],
   "narrative": {
     "northStar": "Il tavolo di lavoro personale",
-    "overview": "Il tavolo di lavoro personale, come definito dal contratto della dashboard: contenuto centrale, comandi leggibili e archivio compatto. La superficie implementata è chiara e fredda, con inchiostro blu notte e Manrope; il contratto della dashboard è allineato a questo fondo freddo.\n\nQuesto documento descrive soltanto la dashboard bento/office, inclusi i suoi moduli e dialoghi. Non prescrive il sistema degli editor dash, type o slides e non introduce un nuovo marchio definitivo.",
+    "overview": "Il tavolo di lavoro personale: contenuto centrale, comandi leggibili e archivio compatto. L’identità approvata è dowitme, con monogramma dw fluido (direzione D) e palette 02 viola/albicocca. Superfici avorio, testo prugna e controlli arrotondati rendono coerenti dashboard e chrome degli editor ospitati.\n\nLa dashboard adotta Manrope e la chrome ospitata condivide logo e colori. I contenuti, i temi dei documenti, i formati e i crediti bento restano indipendenti dall’identità della suite.",
     "keyCharacteristics": [
       "Tre accenti semantici distinguono i formati dei file.",
       "Superfici prevalentemente piatte, delimitate da tono e bordi sottili.",
@@ -299,7 +397,7 @@
     "rules": [
       {
         "name": "The File Identity Rule",
-        "body": "Il colore di formato resta coerente tra creazione, icona del file e punto del filtro.",
+        "body": "La famiglia cromatica di formato resta riconoscibile tra creazione, icona del file e punto del filtro; le schede usano varianti attenuate.",
         "section": "colors"
       },
       {
@@ -309,13 +407,13 @@
       }
     ],
     "dos": [
-      "Do mantenere la corrispondenza documento/blu, foglio/verde, presentazione/arancio insieme a icona e testo.",
+      "Do mantenere la corrispondenza documento/viola, foglio/verde, presentazione/arancio insieme a icona e testo.",
       "Do mantenere focus visibile e stati disabled dei controlli.",
       "Do adattare la densità con i breakpoint esistenti e conservare titolo e azioni dei file su mobile.",
-      "Do usare nomenclatura bento/ in minuscolo e cataloghi di traduzione per la UI."
+      "Do usare dowitme in minuscolo nella suite, preservando crediti e identificatori bento e i cataloghi di traduzione della UI."
     ],
     "donts": [
-      "Don’t trasferire automaticamente questi token agli editor.",
+      "Don’t trasferire i token della chrome ai contenuti o ai temi dei documenti.",
       "Don’t aggiungere ombre alle superfici ordinarie della dashboard: il rilievo strutturale appartiene ai dialoghi.",
       "Don’t trasformare gli esempi statici del sidecar in prova di comportamento o verifica visiva."
     ]

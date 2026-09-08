@@ -1,3 +1,6 @@
+import {brand} from '../client/brand.ts';
+import '../client/brand.css';
+document.documentElement.classList.add('dw-host');
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 The Bento authors
 import '../../slides/src/styles.css';
@@ -40,3 +43,5 @@ host.attach({
   setReadOnly: value => {editor.setHostedReadOnly(value);store.setDirty(host.pending());},
   isEditing: () => editor.isEditing(),
 });
+
+const brandMark=document.querySelector('.ed-logo');if(brandMark)brandMark.innerHTML=brand;

@@ -2,10 +2,10 @@
 
 ## Direction contract
 THESIS: il tavolo di lavoro personale: tre grandi comandi per iniziare, cartelle per organizzare, file riconoscibili a colpo d'occhio.
-OWN-WORLD: bento/ rimane il marchio. Superficie chiara fredda, inchiostro blu notte, Manrope per titoli, icone geometriche coerenti. Blu documento, verde foglio, arancio presentazione.
+OWN-WORLD: dowitme, monogramma dw fluido (direzione D), palette 02 viola #503178 e albicocca #FFB278. Superfici avorio, testo prugna, Manrope e controlli arrotondati. Viola documento, verde foglio, arancio presentazione; schede di creazione attenuate. Logo e palette proseguono nella chrome degli editor ospitati; contenuto, temi dei file e crediti bento restano preservati.
 STORY: entra nel proprio spazio privato, crea o ritrova un file, lo raccoglie in una cartella e decide chi può leggerlo o modificarlo.
 FIRST VIEWPORT: navigazione verticale a sinistra, titolo e ricerca sopra, tre azioni ampie al centro, cartelle compatte e lista file sotto. Il contenuto prevale sui metadati.
-FORM: composizione determinata dal brief: tre azioni di creazione, archivio e spazi personali; estensione della nomenclatura e del comportamento bento. Nessun torneo di concept richiesto per questa struttura esplicita.
+FORM: composizione determinata dal brief: tre azioni di creazione, archivio e spazi personali; identità dowitme sul comportamento bento esistente. Nessun torneo di concept richiesto per questa struttura esplicita.
 FINISH: build completa, verifica desktop/mobile in due passaggi al massimo, revisione indipendente e documentazione del risultato osservato.
 
 ## Permessi

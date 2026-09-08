@@ -25,7 +25,7 @@ Uso remoto tramite Sites con ingresso pubblico autorizzato, contenuti protetti d
 - Nessuna parità completa con Microsoft Office, nessuna specializzazione settoriale.
 
 ## Brand Commitments
-Preservare semplicità e cura di Bento: contenuto centrale, comandi compatti, proprietà contestuali, nomenclatura bento/ in minuscolo. Nessun nuovo marchio definitivo scelto.
+Il marchio della suite è dowitme, in minuscolo, con monogramma dw fluido (direzione D) e palette 02: viola #503178 e albicocca #FFB278. Preservare semplicità e cura di bento: contenuto centrale, comandi compatti e proprietà contestuali; mantenere crediti, identificatori e formati bento.
 
 ## Product Principles
 - Il contenuto strutturato è la fonte di verità.

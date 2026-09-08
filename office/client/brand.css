@@ -1,0 +1,33 @@
+/* dowitme identity: chrome only; never document content. */
+@font-face{font-family:Manrope;src:url('./fonts/manrope.ttf') format('truetype');font-weight:200 800;font-display:swap;}
+.office,html.dw-host:root{
+ --accent:#503178;--accent-ink:#503178;--slash:#ffb278;
+ --chrome:#faf7f3;--chrome-2:#f0e8f5;--field:#fffdfb;--blue:#71459e;--grid-dot:#e4d9eb;--bg:#faf7f3;--surface:#fffdfb;--panel:#f4eef6;--wash:#f5eff8;
+ --ink:#30263c;--ink-2:#51435e;--muted:#72677d;
+ --line:#e9e1ec;--line-strong:#cdbed6;--hover:#eee4f5;
+ --sel:#e7d9f5;--sel-ring:#71459e;
+}
+.office-wordmark{display:inline-flex;align-items:center;gap:8px;color:#503178;}
+.office-wordmark .dw-symbol{width:39px;height:30px;object-fit:contain;}
+.office-wordmark .dw-name{color:inherit;font-family:Manrope,sans-serif;font-weight:800;letter-spacing:-.035em;}
+.office .office-primary{background:#503178;color:#fff;border-color:#503178;border-radius:12px;}
+.office .office-primary:hover{background:#3d235c;}
+.office .office-button{border-radius:10px;}
+.office-header{background:#fffdfb;}
+.office .dx-mark,.dw-host .ed-logo,.dw-host #mark{display:flex;align-items:center;gap:8px;color:#503178;}
+.office .dx-mark .dw-symbol,.dw-host .dw-symbol{width:36px;height:28px;object-fit:contain;}
+.office .dx-mark .dw-name,.dw-host .dw-name{font-family:Manrope,sans-serif;font-size:15px;font-weight:800;letter-spacing:-.03em;}
+.dw-host .ed-topbar,.dw-host .t-bar{background:var(--surface);}
+.dw-host :is(button,input,select):focus-visible{outline-color:var(--sel-ring);}
+html.dw-host[data-theme="dark"],html[data-theme="dark"] .office{
+ --accent:#c6a7eb;--accent-ink:#dac4f3;--bg:#211b29;--surface:#2b2334;--panel:#31283c;
+ --wash:#382c43;--ink:#f5edf9;--ink-2:#e2d5eb;--muted:#c0aecb;--line:#43364f;--line-strong:#705d80;--hover:#443353;--sel:#563c70;--sel-ring:#c6a7eb;
+}
+html[data-theme="dark"] .office-header{background:var(--surface);}
+html[data-theme="dark"] .office-wordmark,html[data-theme="dark"] .dw-host .dw-name{color:#dac4f3;}
+@media(max-width:700px){.office-wordmark .dw-symbol{width:30px;height:24px;}.office-wordmark{gap:5px;}.dw-host .dw-name{display:none;}}
+
+
+html.dw-host:root[data-theme="dark"]{--chrome:#211b29;--chrome-2:#31283c;--field:#2b2334;--grid-dot:#43364f;}
+html[data-theme="dark"] .dw-symbol{filter:brightness(1.65);}
+html.dw-host[data-theme="dark"] .dw-name{color:#dac4f3;}

@@ -1,3 +1,5 @@
+import {brand,brandSymbol} from './brand.ts';
+import './brand.css';
 import '../../dash/src/styles.css';
 import './styles.css';
 import {LOCALE_CHOICES,locale,setLocale,t} from '../../dash/src/i18n.ts';
@@ -29,7 +31,8 @@ const icon=(name:string)=>`<svg viewBox="0 0 24 24" aria-hidden="true" width="18
   history:'<path d="M3 11a9 9 0 1 1 3 8M3 4v7h7M12 7v5l3 2"/>',agent:'<rect x="4" y="7" width="16" height="13" rx="4"/><path d="M12 3v4M8 12h.01M16 12h.01M9 16h6"/>',
   download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',check:'<path d="m5 12 4 4L19 6"/>',upload:'<path d="M12 16V4m-5 5 5-5 5 5M4 16v5h16v-5"/>',
 } as Record<string,string>)[name]??''}</svg>`;
-const mark=`<span class="office-wordmark">dowitme</span>`;
+const favicon=document.createElement('link');favicon.rel='icon';favicon.type='image/webp';favicon.href=brandSymbol;document.head.append(favicon);
+const mark=`<span class="office-wordmark">${brand}</span>`;
 const button=(id:string,name:string,label:string,extra='')=>`<button type="button" class="office-button ${extra}" data-office="${id}" title="${escape(label)}">${icon(name)}<span>${escape(label)}</span></button>`;
 function languagePicker(){return `<select id="office-language" aria-label="${escape(t('Language'))}">${LOCALE_CHOICES.map(l=>`<option value="${l.code}" ${l.code===locale()?'selected':''}>${l.label}</option>`).join('')}</select>`;}
 function wireLanguage(){document.getElementById('office-language')?.addEventListener('change',e=>{setLocale((e.target as HTMLSelectElement).value);location.reload();});}
@@ -80,6 +83,7 @@ async function openWorkbook(id:string){
     (window as unknown as {__BENTO_OFFICE_HOST__:OfficeHost}).__BENTO_OFFICE_HOST__=host;
     document.getElementById('bento-doc')!.textContent=JSON.stringify(snapshot.document).replace(/</g,'\\u003c');
     await import('../../dash/src/main.ts');
+    const nativeMark=document.querySelector('.dx-mark');if(nativeMark)nativeMark.innerHTML=brand;
   }else{
     const format=snapshot.document.format;
     const {configureApp}=await import('../../kernel/src/app.ts');configureApp({appId:format.replace('/','-'),appName:format,manifestUrl:''});

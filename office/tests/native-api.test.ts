@@ -167,3 +167,11 @@ test('create_workbook tool rejects invalid inputs, unauthenticated callers and d
     assert.equal((await api(agent.body.token,'/api/tools/create_workbook','POST',input)).status,403);
   }
 });
+
+test('slide text tool supplies native required fields and remains a proposal',async()=>{
+ const w=await create('bento/slides');
+ const saved=await api(owner,'/api/workbooks/'+w.id);
+ const result=await api(owner,'/api/tools/propose_slide_text','POST',{workbookId:w.id,slideId:saved.body.document.slides[0].id,text:'WebMCP <title>',baseRevision:0,operationId:crypto.randomUUID(),summary:'Add title'});
+ assert.equal(result.status,200,JSON.stringify(result.body));assert.equal(result.body.status,'pending');
+ assert.equal((await api(owner,'/api/workbooks/'+w.id)).body.revision,0);
+});

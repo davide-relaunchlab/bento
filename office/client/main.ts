@@ -51,7 +51,7 @@ async function start(){
     actor=(await api('/api/session')).actor;
     const id=new URL(location.href).searchParams.get('workbook');
     if(id)await openWorkbook(id);else await archive();
-    webMCP=registerWebMCP(async()=>{await controller?.refresh();await refreshArchive?.();if(currentPanel)await renderPanel(currentPanel);},async()=>{if(controller?.pending)await controller.flush();});
+    webMCP=registerWebMCP(async()=>{await controller?.refresh();await refreshArchive?.();if(currentPanel)await renderPanel(currentPanel);},async()=>{if(controller?.pending)await controller.flush();},()=>controller?{page:'editor',app:controller.confirmed.document.format.split('/')[1],workbookId:controller.confirmed.id,title:controller.confirmed.title,revision:controller.revision,role:controller.confirmed.role}:{page:'dashboard'});
   }catch(error){
     if(error instanceof HttpError&&error.status===401){
       root.innerHTML=`<header class="office-header">${mark}${languagePicker()}</header><main class="office-welcome"><div class="office-file-mark">${icon('book')}</div><h1>${escape(ot('Sign in to your workspace'))}</h1><p>${escape(ot('Documents, slides and spreadsheets. Shared with people and agents.'))}</p><a class="office-button office-primary" href="${escape(chatGPTSignInPath(location.pathname+location.search))}">${escape(ot('Continue with ChatGPT'))}</a></main>`;wireLanguage();

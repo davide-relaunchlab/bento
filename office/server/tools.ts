@@ -1,3 +1,5 @@
+import {defaultText} from '../../slides/src/model.ts';
+import {digest} from '../shared/content.ts';
 import { toolDefinitions } from '../shared/tools.ts';
 import { OfficeError, readRange } from '../shared/changes.ts';
 import { _internals,readCell } from '../../dash/src/store.ts';
@@ -8,6 +10,15 @@ export async function invokeTool(office:Office,name:string,raw:unknown):Promise<
   const parsed=tool.schema.safeParse(raw);if(!parsed.success)throw new OfficeError('invalid_request','Parametri dello strumento non validi.',400,parsed.error.issues);
   const input=parsed.data as Record<string,any>,id=input.workbookId as string;
   switch(name) {
+    case 'propose_slide_text': {
+      const w=await office.get(id);
+      if(w.document.format!=='bento/slides')throw new OfficeError('invalid_format','Serve una presentazione.',400);
+      const elementId='t-'+await digest({workbookId:id,operationId:input.operationId});
+      const html=input.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+      const geometry=Object.fromEntries(['x','y','w','h','fontSize'].filter(k=>input[k]!==undefined).map(k=>[k,input[k]]));
+      const element=defaultText({id:elementId,html,...geometry});
+      return office.propose(id,{baseRevision:input.baseRevision,operationId:input.operationId,summary:input.summary,patches:[{op:'setElement',slide:input.slideId,id:elementId,element}]});
+    }
     case 'create_workbook':return office.createFromTool(input.title,input.format,input.operationId);
     case 'list_workbooks':return {workbooks:await office.list()};
     case 'describe_workbook': {

@@ -42,3 +42,29 @@ These checks cover the local branch, not a production deployment. After an
 authorized deployment, reload the site and reopen the inspector panel to
 refresh discovery; verify that `create_workbook` appears before testing the
 same natural-language request through OpenRouter.
+
+## Context and native text insertion
+
+The browser additionally exposes `get_page_context`: dashboard versus editor,
+app format, current file ID/title/revision and role. Document-targeting browser
+tools may omit `workbookId` to use the current editor. Dashboard calls must
+choose an explicit file; remote MCP and HTTP retain explicit IDs. Context is
+read at execution time, after flushing pending edits. This identifies the open
+file, not the current text selection or selected slide.
+
+`propose_slide_text` accepts plain text, a slide ID, the revision read earlier,
+an operation ID and summary, plus optional geometry/font size. It builds a
+complete native text element and uses the existing reviewable proposal path.
+This fixes the screenshot case where manually generated `setElement` omitted
+`fontFamily` and `lineHeight`; changing the element ID prefix cannot fix that.
+
+Browser execution returns structured error codes, messages and details instead
+of throwing away API errors behind a generic native invocation failure. This
+also lets the inspector show a missing-target or permission error directly.
+OpenRouter remains unchanged. Pending proposals still need human acceptance.
+
+Verified locally: dashboard refuses an implicit target; presentation reads work
+without an ID; text proposal created through native WebMCP, accepted through the
+UI and read back at revision 1 with a complete persisted text element. Context
+switching and explicit target preservation are regression-tested. Full suite:
+72 tests. These changes are not yet deployed to the public site.

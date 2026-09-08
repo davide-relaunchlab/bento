@@ -410,6 +410,14 @@ export function installDom(): { doc: Doc; host: El } {
   const doc = new Doc()
   const g = globalThis as unknown as Record<string, unknown>
   g.document = doc
+  // Formula assist distinguishes input fields from inline contenteditable
+  // cells. The fixture uses El for both; match the real tag, not every El.
+  g.HTMLInputElement = class {
+    static [Symbol.hasInstance](el: unknown) { return el instanceof El && el.tagName === 'INPUT' }
+  }
+  // These rigs exercise grid edits, not asynchronous DOM-removal delivery.
+  // Suggestion positioning, focus and disposal are exercised in the browser.
+  g.MutationObserver = class { observe() {} disconnect() {} }
   g.getSelection = () => ({ removeAllRanges() {}, addRange() {} })
   if (!g.navigator) g.navigator = { language: 'en', clipboard: { writeText: () => Promise.resolve() } }
   // `popover` clamps its position against the viewport. No layout happens here,

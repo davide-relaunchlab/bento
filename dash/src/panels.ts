@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 The Bento authors
+import { attachFormulaAssist } from './formulaassist.ts'
 // The properties panel — and, since the sheets left, the only panel there is.
 //
 // THE SHEET LIST IS GONE FROM HERE, and the whole left panel went with it.
@@ -544,6 +545,7 @@ export function mountPanels(host: PanelsHost): Panels {
           : { formula: next },
       })
     })
+    attachFormulaAssist(formula, true)
     formula.placeholder = t('Value * Probability')
     formula.classList.add('dp-mono')
     row(right, t('Formula'), formula)
@@ -1057,7 +1059,7 @@ function text(value: string, onChange: (v: string) => void): HTMLInputElement {
   input.addEventListener('change', () => onChange(input.value))
   input.addEventListener('keydown', (e) => {
     e.stopPropagation()                       // the grid owns bare keys otherwise
-    if (e.key === 'Enter') input.blur()
+    if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) input.blur()
   })
   return input
 }

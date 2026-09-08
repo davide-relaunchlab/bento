@@ -21,6 +21,8 @@
 // as the starter and saves over itself.
 
 import './styles.css'
+import './formulaassist.css'
+import { attachFormulaAssist, type FormulaAssist } from './formulaassist.ts'
 import { configureApp, appConfig } from '../../kernel/src/app.ts'
 import {
   capturePristine, readEmbeddedDoc, serializeFile, serializeAuto, saveFile,
@@ -698,8 +700,9 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
     // The label names the RANGE, so it is wrong the moment the selection moves.
     syncBridge()
   }
+  attachFormulaAssist(fxEl)
   fxEl.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter') return
+    if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return
     grid.setActiveCell(fxEl.value)
     fxEl.blur()
   })
@@ -2271,7 +2274,7 @@ async function addFormula(store: Store, sheet: TableSheet): Promise<void> {
   const got = await askForm({
     title: t('New formula column'),
     fields: [
-      { key: 'expr', label: t('Formula'), value: example, mono: true, placeholder: t('e.g. Price * Quantity') },
+      { key: 'expr', formula: true, label: t('Formula'), value: example, mono: true, placeholder: t('e.g. Price * Quantity') },
       { key: 'name', label: t('Column name'), value: t('Computed') },
     ],
     hint: `${columnHint(sheet)}\n${t('Functions')}: ${FUNCTIONS.slice(0, 24).join(' ')}…`,
@@ -2299,7 +2302,7 @@ async function addFormula(store: Store, sheet: TableSheet): Promise<void> {
 async function editFormula(store: Store, sheet: TableSheet, col: Column): Promise<void> {
   const got = await askForm({
     title: t('Formula for “{col}”').replace('{col}', col.name),
-    fields: [{ key: 'expr', label: t('Formula'), value: col.formula ?? '', mono: true }],
+    fields: [{ key: 'expr', formula: true, label: t('Formula'), value: col.formula ?? '', mono: true }],
     hint: `${columnHint(sheet)}\n${t('Leave it empty to turn this back into an ordinary column.')}`,
     submit: t('Save formula'),
     check: (v) => formulaProblem(sheet, v.expr),
@@ -2359,6 +2362,7 @@ interface AskField {
   placeholder?: string
   /** formulas and ids are read character by character; prose is not */
   mono?: boolean
+  formula?: boolean
 }
 
 function askForm(opts: {
@@ -2382,6 +2386,7 @@ function askForm(opts: {
     h.textContent = opts.title
     card.append(h)
 
+    const assists = new Map<HTMLInputElement, FormulaAssist>()
     const inputs: Record<string, HTMLInputElement> = {}
     for (const f of opts.fields) {
       const row = document.createElement('label')
@@ -2396,6 +2401,7 @@ function askForm(opts: {
       row.append(lab, inp)
       card.append(row)
       inputs[f.key] = inp
+      if (f.formula) assists.set(inp, attachFormulaAssist(inp, true))
     }
 
     if (opts.hint) {
@@ -2437,6 +2443,7 @@ function askForm(opts: {
     }
 
     const done = (v: Record<string, string> | null): void => {
+      for (const assist of assists.values()) assist.destroy()
       back.remove()
       document.removeEventListener('keydown', onKey, true)
       resolve(v)
@@ -2446,6 +2453,8 @@ function askForm(opts: {
     // this, typing a formula also types it into the sheet behind the dialog.
     const onKey = (e: KeyboardEvent): void => {
       if (!back.contains(e.target as Node)) return
+      if (e.isComposing || e.keyCode === 229) return
+      if (assists.get(e.target as HTMLInputElement)?.handleKey(e)) return
       e.stopPropagation()
       if (e.key === 'Escape') { e.preventDefault(); done(null) }
       else if (e.key === 'Enter' && validate()) { e.preventDefault(); done(values()) }

@@ -12,10 +12,11 @@ Persone e agenti AI esterni che lavorano sugli stessi fogli di calcolo. Più per
 Una suite web generale, basata sul fork reale di nyblnet/bento. La prima versione riguarda i fogli; i documenti costituiscono l'estensione successiva, non un secondo editor da costruire in questa fase.
 
 ## Operating Context
-Uso remoto tramite Sites, salvataggio persistente, condivisione controllata. Agenti esterni con MCP e supporto aggiuntivo WebMCP nei browser che lo espongono. Nessuna dipendenza da una chat integrata.
+Uso remoto tramite Sites con ingresso pubblico autorizzato, contenuti protetti da permessi, salvataggio persistente e condivisione controllata. Agenti esterni con MCP e supporto aggiuntivo WebMCP nei browser che lo espongono. Nessuna dipendenza da una chat integrata.
 
 ## Capabilities and Constraints
 - Riutilizzare dash, modelli, formule, grafici e import/export esistenti; non riscrivere l'editor.
+- Suggerimenti delle funzioni digitando =, completamento da tastiera e sintassi contestuale coerente con il motore.
 - Modifiche puntuali, verificabili, attribuite, rifiutabili e reversibili. Persona e agente passano per gli stessi controlli.
 - Ruoli proprietario, editor e lettore; agenti distinti con accesso limitabile e revocabile. Le proposte possono essere sottoposte a un editor prima dell'applicazione.
 - Gestire modifiche concorrenti senza sovrascrittura silenziosa; errore e recupero espliciti quando cambia la stessa porzione di contenuto.

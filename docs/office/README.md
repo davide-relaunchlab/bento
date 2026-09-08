@@ -41,6 +41,14 @@ MCP Streamable HTTP è disponibile nell'applicazione a `/api/mcp` (alias `/mcp`)
 
 WebMCP usa `document.modelContext`, quando presente, con l'identità della sessione e attribuzione `browser_agent`. Gli strumenti aggiornano lo stesso stato visibile e rispettano gli stessi controlli del servizio.
 
-**Stato Sites:** la pubblicazione privata è verificata; il servizio MCP gestito restituisce «Sites MCP is not enabled for this Site owner». Il gate privato di Sites è distinto dai permessi dei fogli: la sola chiave agente non lo supera. L'ingresso pubblico per il servizio MCP autonomo richiede una scelta esplicita del proprietario. Non usare il token di bypass Sites come credenziale di prodotto.
+**Stato Sites:** ingresso pubblico autorizzato dal proprietario il 2026-09-08. I fogli restano protetti dalle ACL applicative: senza identità valida le API rispondono 401. MCP esterno verificato sul sito pubblicato con client Streamable HTTP e chiave limitata alle proposte. Il servizio MCP gestito Sites non è abilitato per questo account; il prodotto espone direttamente `/api/mcp`. Non usare il token di bypass Sites come credenziale di prodotto.
+
+Per collegare un client, aprire un foglio e scegliere **Agenti → Crea collegamento agente**, assegnare permesso e scadenza, quindi copiare endpoint e chiave. Il client deve supportare un endpoint MCP remoto con header `Authorization: Bearer <chiave>`. La chiave può essere revocata dallo stesso pannello.
+
+## Aiuto durante la scrittura delle formule
+
+Digitare `=` in una cella o nella barra formula apre le funzioni disponibili. Il menu si filtra mentre si scrive; frecce, Tab/Invio o clic inseriscono il nome e la parentesi, senza salvare la cella. La sintassi evidenzia l'argomento corrente, anche nelle chiamate annidate. Esc chiude prima i suggerimenti; il successivo Esc segue l'annullamento normale dell'editor.
+
+Il catalogo deriva dalle 103 funzioni del motore e descrive le arità effettive. Le funzioni restano in inglese, gli argomenti sono tradotti e si separano con virgole. I campi delle formule di colonna offrono lo stesso aiuto senza richiedere `=`. Non viene promessa compatibilità con tutte le firme Excel.
 
 Le prove eseguite e lo stato della consegna sono in [IMPLEMENTATION.md](IMPLEMENTATION.md).

@@ -1,0 +1,13 @@
+.dx-formula-assist{position:fixed;z-index:12000;width:410px;overflow:auto;background:var(--surface,#fff);color:var(--ink,#1e2a3a);border:1px solid var(--line,#d6dce5);border-radius:9px;box-shadow:0 8px 28px #0002;font:12px/1.5 system-ui,sans-serif;text-align:left;font-weight:400;white-space:normal}
+.dx-function-heading{display:flex;justify-content:space-between;gap:16px;padding:9px 12px;color:var(--muted,#5c6878);font-size:11px;border-bottom:1px solid var(--line,#d6dce5)}
+.dx-function-heading span{opacity:.8}
+.dx-function-list{max-height:230px;overflow:auto;overscroll-behavior:contain;padding:4px}
+.dx-function-option{padding:7px 8px;border-radius:5px;cursor:pointer}
+.dx-function-option:hover{background:var(--hover,#f1f4f8)}
+.dx-function-option[aria-selected=true]{background:var(--sel,#e6eefc);color:var(--ink,#1e2a3a);outline:1px solid var(--sel-ring,#4273c8);outline-offset:-1px}
+.dx-function-syntax{font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}
+.dx-function-help{padding:10px 12px;border-top:1px solid var(--line,#d6dce5)}
+.dx-function-help:first-child{border-top:0}
+.dx-function-argument{font-weight:750;color:var(--accent-ink,#285cad);text-decoration:underline;text-underline-offset:3px}
+.dx-function-note{padding:6px 12px 9px;color:var(--muted,#5c6878);font-size:10px}
+@media(max-height:500px){.dx-function-list{max-height:130px}}

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 The Bento authors
+import { attachFormulaAssist } from './formulaassist.ts'
 // The grid.
 //
 // WINDOWED, not because 100k rows is slow to compute — a full scan is 5.9 ms —
@@ -2915,6 +2916,7 @@ export class Grid {
     getSelection()?.removeAllRanges()
     getSelection()?.addRange(range)
 
+    const assist = attachFormulaAssist(cell)
     let done = false
     const finish = (write: boolean, move?: 'down' | 'up' | 'right' | 'left') => {
       if (done || !this.cvEditing) return
@@ -2929,6 +2931,7 @@ export class Grid {
       cell.classList.remove('dv-refused')
       cell.removeAttribute('title')
       done = true
+      assist.destroy()
       this.cvEditing = null
       const text = typed
       cell.contentEditable = 'false'
@@ -2957,6 +2960,7 @@ export class Grid {
     cell.onblur = () => finish(true)
     cell.onkeydown = (e) => {
       e.stopPropagation()
+      if (e.isComposing || e.keyCode === 229) return
       if (e.key === 'Enter') { e.preventDefault(); finish(true, e.shiftKey ? 'up' : 'down'); return }
       if (e.key === 'Tab') { e.preventDefault(); finish(true, e.shiftKey ? 'left' : 'right'); return }
       if (e.key === 'Escape') { e.preventDefault(); finish(false) }
@@ -3373,6 +3377,7 @@ export class Grid {
     getSelection()?.removeAllRanges()
     getSelection()?.addRange(range)
 
+    const assist = attachFormulaAssist(cell)
     let done = false
     const finish = (write: boolean, move?: 'down' | 'up' | 'right' | 'left') => {
       if (done || !this.editing) return
@@ -3387,6 +3392,7 @@ export class Grid {
       cell.classList.remove('dv-refused')
       cell.removeAttribute('title')
       done = true
+      assist.destroy()
       this.editing = null
       const text = typed
       cell.contentEditable = 'false'
@@ -3440,6 +3446,7 @@ export class Grid {
       // the event reaches the document the "is something being edited?" guard
       // there no longer sees an editor — and Enter moved the cursor twice.
       e.stopPropagation()
+      if (e.isComposing || e.keyCode === 229) return
       if (e.key === 'Enter') { e.preventDefault(); finish(true, e.shiftKey ? 'up' : 'down'); return }
       if (e.key === 'Tab') { e.preventDefault(); finish(true, e.shiftKey ? 'left' : 'right'); return }
       if (e.key === 'Escape') { e.preventDefault(); finish(false) }

@@ -30,3 +30,25 @@ test('dashboard requires a target; context follows navigation and explicit targe
  await registered.get('read_blocks').execute({workbookId:'explicit-file'});assert.equal((received as any).workbookId,'explicit-file');
  }finally{globalThis.document=oldDoc;globalThis.fetch=oldFetch;}
 });
+
+test('a successful edit remains successful if refreshing the editor fails',async()=>{
+ const registered=new Map<string,any>();const oldDoc=globalThis.document,oldFetch=globalThis.fetch;
+ Object.assign(globalThis,{document:{modelContext:{registerTool:(t:any)=>registered.set(t.name,t)}}});
+ globalThis.fetch=async()=>Response.json({changeId:'saved-change',revision:5});
+ try{
+  registerWebMCP(async()=>{throw new Error('Refresh failed');},async()=>{},()=>({page:'editor',workbookId:'current'}));
+  const result=await registered.get('apply_change').execute({});
+  assert.equal(result.isError,undefined);assert.equal(result.changeId,'saved-change');assert.match(result.refreshWarning,/riuscita/);
+ }finally{globalThis.document=oldDoc;globalThis.fetch=oldFetch;}
+});
+
+test('unknown explicit target gets recovery guidance and never falls back to another file',async()=>{
+ const registered=new Map<string,any>();const oldDoc=globalThis.document,oldFetch=globalThis.fetch;let received:any;
+ Object.assign(globalThis,{document:{modelContext:{registerTool:(t:any)=>registered.set(t.name,t)}}});
+ globalThis.fetch=async(_url,options)=>{received=JSON.parse(options!.body as string);return Response.json({error:{code:'not_found',message:'Documento non disponibile.'}},{status:404});};
+ try{
+  registerWebMCP(async()=>{},async()=>{},()=>({page:'editor',workbookId:'current'}));
+  const result=await registered.get('apply_change').execute({workbookId:'wrong-id'});
+  assert.equal(received.workbookId,'wrong-id');assert.equal(result.error.code,'not_found');assert.match(result.error.recovery,/get_page_context/);
+ }finally{globalThis.document=oldDoc;globalThis.fetch=oldFetch;}
+});

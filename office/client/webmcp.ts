@@ -24,10 +24,10 @@ export function registerWebMCP(after:()=>Promise<void>,before:()=>Promise<void>,
           args.workbookId=current.workbookId;
         }
         const result=await api('/api/tools/'+tool.name,'POST',args);
-        await after();
+        try {await after();}catch{return {...result,refreshWarning:'Operazione riuscita; aggiornamento della vista non riuscito. Rileggi il documento prima di continuare.'};}
         return result;
       }catch(error){
-        return {isError:true,error:error instanceof HttpError?{code:error.code,message:error.message,details:error.details}:{code:'browser_error',message:error instanceof Error?error.message:String(error)}};
+        return {isError:true,error:error instanceof HttpError?{code:error.code,message:error.message,details:error.details,...(error.code==='not_found'?{recovery:'Usa get_page_context o list_workbooks e copia workbookId esattamente. Non usare docId, markup o identificatori inventati. Nessuna modifica è stata applicata.'}:{})}:{code:'browser_error',message:error instanceof Error?error.message:String(error)}};
       }
     },
   },{signal:controller.signal});

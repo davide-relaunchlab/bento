@@ -175,3 +175,55 @@ test('slide text tool supplies native required fields and remains a proposal',as
  assert.equal(result.status,200,JSON.stringify(result.body));assert.equal(result.body.status,'pending');
  assert.equal((await api(owner,'/api/workbooks/'+w.id)).body.revision,0);
 });
+
+test('WebMCP creates and directly edits a full presentation with defaults, undo and replay',async()=>{
+ const created=await api(owner,'/api/tools/create_workbook','POST',{title:'WebMCP complete',format:'bento/slides',operationId:crypto.randomUUID()});
+ const w=created.body;assert.equal(w.workbookId,w.id);assert.equal(w.slideIds.length,1);
+ const tool=(name:string,input:any)=>api(owner,'/api/tools/'+name,'POST',{workbookId:w.id,...input});
+ const schema=await tool('get_editing_schema',{});assert.equal(schema.status,200);assert.equal(schema.body.canApply,true);
+ assert.ok(schema.body.patchSchema.oneOf.some((s:any)=>s.properties.op.const==='addSlide'));
+ const elements=Object.entries(schema.body.templates).filter(([key])=>key!=='slide').map(([type,value])=>({op:'addElement',slide:'slide-fun-2',id:'test-'+type,element:{...(value as any),id:'test-'+type}}));
+ const input={baseRevision:0,operationId:crypto.randomUUID(),summary:'Full editable slide',patches:[
+  {op:'addSlide',id:'slide-fun-2'},
+  {op:'addElement',slide:'slide-fun-2',id:'title',element:{type:'text',html:'WebMCP',fontSize:40}},
+  ...elements,
+  {op:'setSlideProps',slide:'slide-fun-2',props:{notes:'Speaker notes',background:'#112233',transition:'zoom',hidden:false}},
+  {op:'updateElement',slide:'slide-fun-2',id:'title',props:{x:50,y:80,w:900,h:150,color:'#ffffff',rotation:5,fx:{enter:'fade',enterDur:1}}},
+  {op:'reorderSlides',order:['slide-fun-2',...w.slideIds]},
+  {op:'setDocProps',props:{present:{slideNumber:true,progress:true},size:{width:1600,height:900}}},
+ ]};
+ const result=await tool('apply_change',input);assert.equal(result.status,200,JSON.stringify(result.body));
+ const replay=await tool('apply_change',input);assert.equal(replay.body.changeId,result.body.changeId);
+ const saved=(await tool('read_document',{})).body;assert.equal(saved.revision,1);assert.equal(saved.docId,w.docId);
+ const slide=saved.document.slides[0];assert.equal(slide.id,'slide-fun-2');assert.equal(slide.elements.length,9);
+ assert.equal(slide.elements[0].fontSize,40);assert.equal(typeof slide.elements[0].fontFamily,'string');assert.equal(slide.elements[0].x,50);
+ const history=await tool('list_changes',{});assert.equal(history.body.changes[0].actor_kind,'browser_agent');
+ const duplicate=await tool('apply_change',{...input,baseRevision:1,operationId:crypto.randomUUID()});assert.equal(duplicate.status,400);
+ assert.equal((await tool('read_document',{})).body.revision,1);
+ const removal=await tool('apply_change',{baseRevision:1,operationId:crypto.randomUUID(),summary:'Remove elements and slide',patches:[{op:'setElement',slide:'slide-fun-2',id:'title'},{op:'setSlide',id:w.slideIds[0]}]});
+ assert.equal(removal.status,200,JSON.stringify(removal.body));
+ assert.equal((await tool('undo_change',{changeId:removal.body.changeId,operationId:crypto.randomUUID()})).status,200);
+ assert.deepEqual((await tool('read_document',{})).body.document.slides,saved.document.slides);
+ assert.equal((await tool('undo_change',{changeId:result.body.changeId,operationId:crypto.randomUUID()})).status,200);
+ const restored=(await tool('read_document',{})).body;assert.equal(restored.document.slides.length,1);assert.equal(restored.docId,w.docId);
+});
+
+test('all formats expose schemas and full content without relaxing permissions or atomicity',async()=>{
+ for(const format of ['bento/slides','bento/type','bento/dash']){
+  const w=(await api(owner,'/api/tools/create_workbook','POST',{title:'Schema '+format,format,operationId:crypto.randomUUID()})).body;
+  const root='/api/workbooks/'+w.id;
+  await api(owner,root+'/members','POST',{email:viewer.email,role:'viewer'});
+  const schema=await api(viewer,'/api/tools/get_editing_schema','POST',{workbookId:w.id});assert.equal(schema.status,200);assert.equal(schema.body.canApply,false);
+  const read=await api(owner,'/api/tools/read_document','POST',{workbookId:w.id});assert.equal(read.body.document.format,format);
+  assert.equal((await api(owner,'/api/tools/read_document','POST',{workbookId:'<arg_value>'+w.id+'</arg_value>'})).status,404);
+  for(const permission of ['read','propose']){
+   const a=(await api(owner,root+'/agents','POST',{name:'Limited',permission,expiresDays:1})).body;
+   const edit={workbookId:w.id,baseRevision:0,operationId:crypto.randomUUID(),summary:'Denied',patches:[{op:'setTitle',title:'Changed'}]};
+   assert.equal((await api(a.token,'/api/tools/apply_change','POST',edit)).status,403);
+   assert.equal((await api(viewer,'/api/tools/apply_change','POST',edit)).status,403);
+  }
+  const edit={workbookId:w.id,baseRevision:0,operationId:crypto.randomUUID(),summary:'Atomic rejection',patches:[{op:'setTitle',title:'Must roll back'},{op:'setDocProps',props:{docId:'changed'}}]};
+  assert.equal((await api(owner,'/api/tools/apply_change','POST',edit)).status,400);
+  assert.equal((await api(owner,root)).body.revision,0);
+ }
+});

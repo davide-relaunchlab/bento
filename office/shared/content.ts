@@ -1,9 +1,10 @@
+import {nativePatchSchema,nativeDocFields,nativeSlideFields} from './patch-schemas.ts';
 // SPDX-License-Identifier: MIT
 // One transaction boundary for the three native bento document formats.
 import {validateNativeShape} from './native-validation.ts';
 import * as dash from './changes.ts';
 import type {DashDoc} from '../../dash/src/model.ts';
-import {newDoc,type BentoDoc} from '../../slides/src/model.ts';
+import {newDoc,emptySlide,defaultText,defaultCode,defaultShape,defaultImage,defaultChart,defaultTable,defaultMedia,type BentoDoc} from '../../slides/src/model.ts';
 import {emptyDoc,type TypeDoc} from '../../type/src/model.ts';
 export {OfficeError,digest,canonical,MAX_DOCUMENT_BYTES} from './changes.ts';
 export type OfficeDocument=DashDoc|BentoDoc|TypeDoc;
@@ -18,12 +19,8 @@ const copy=<T>(v:T):T=>structuredClone(v);
 const fail=(message='Contenuto del documento non valido.'):never=>{throw new dash.OfficeError('invalid_document',message);};
 const record=(v:any):v is Record<string,any>=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const safeId=(v:unknown):v is string=>typeof v==='string'&&v.length>0&&v.length<=200&&!['__proto__','prototype','constructor'].includes(v);
-const fields:Record<NativeDocument['format'],Set<string>>={
- 'bento/type':new Set(['title','subtitle','meta','page','footnotes','comments','layout','styles','type','revisions','signatures','track','fonts','assets','bibliography','citeStyle','sections']),
- 'bento/slides':new Set(['title','meta','size','theme','present','assets','fonts','layouts']),
-};
-const patchKeys:Record<string,string[]>={setBlock:['id','block','at'],setSlide:['id','value','at'],setElement:['slide','id','element','at'],reorderBlocks:['order'],reorderSlides:['order'],reorderElements:['slide','order'],setDocProps:['props','drop'],setSlideProps:['slide','props','drop'],setTitle:['title']};
-const slideFields=new Set(['background','transition','notes','themeRefs','name','stateOf','hidden','hover','comments']);
+const fields={'bento/type':new Set<string>(nativeDocFields['bento/type']),'bento/slides':new Set<string>(nativeDocFields['bento/slides'])};
+const slideFields=new Set(nativeSlideFields);
 function safeJSON(input:unknown){let count=0;const walk=(v:any,depth:number)=>{if(++count>1_000_000||depth>40)fail();if(v===null||typeof v==='string'||typeof v==='boolean')return;if(typeof v==='number'&&Number.isFinite(v))return;if(typeof v!=='object'||!v)fail();if(!Array.isArray(v)&&Object.getPrototypeOf(v)!==Object.prototype&&Object.getPrototypeOf(v)!==null)fail();for(const k of Object.keys(v)){if(['__proto__','prototype','constructor'].includes(k))fail();walk(v[k],depth+1);}};walk(input,0);if(new TextEncoder().encode(JSON.stringify(input)).length>dash.MAX_DOCUMENT_BYTES)throw new dash.OfficeError('too_large','Il documento supera 8 MB.',413);}
 function unique(items:any[]){const ids=new Set<string>();for(const item of items){if(!record(item)||!safeId(item.id)||ids.has(item.id))fail('Identità mancanti o duplicate.');ids.add(item.id);}}
 export function validateWorkbook(input:unknown):OfficeDocument {
@@ -55,12 +52,46 @@ function valueAt(d:NativeDocument,s:Scope):unknown{
  if(s.kind==='doc'){const {modified,...content}=d;return content;}
  if(s.kind==='docField')return (d as any)[s.key!];
  if(s.kind==='slideField')return d.format==='bento/slides'?(d.slides.find(v=>v.id===s.slide) as any)?.[s.key!]:undefined;
- if(s.kind==='order')return units(d,s.key as 'block'|'slide'|'element',s.slide).map(v=>v.id);
+ if(s.kind==='order'){try{return units(d,s.key as 'block'|'slide'|'element',s.slide).map(v=>v.id);}catch{return undefined;}}
  try{return units(d,s.kind,s.slide).find(v=>v.id===s.key);}catch{return undefined;}
 }
 function applyOne(d:NativeDocument,p:NativePatch):Scope[]{
  const scope:Scope[]=[];
- if(!patchKeys[p.op]||Object.keys(p).some(k=>k!=='op'&&!patchKeys[p.op].includes(k)))fail('Operazione o parametri non supportati.');
+ const concrete=(next:NativePatch):Scope[]=>{for(const key of Object.keys(p))delete (p as any)[key];Object.assign(p,next);return applyOne(d,p);};
+ const parsed=nativePatchSchema.safeParse(p);
+ if(!parsed.success)throw new dash.OfficeError('invalid_document','Operazione o parametri non supportati. Usa get_editing_schema per le operazioni e i modelli disponibili.',400,parsed.error.issues);
+ if(p.op==='addSlide'){
+  if(d.format!=='bento/slides')fail('Serve una presentazione.');
+  const deck=d as BentoDoc;
+  if(deck.slides.some(s=>s.id===p.id))fail('La slide esiste già. Usa setSlideProps per modificarla.');
+  if(p.props&&Object.keys(p.props).some(k=>!slideFields.has(k)&&k!=='elements'))fail('Proprietà della slide non modificabile.');
+  return concrete({op:'setSlide',id:p.id,value:emptySlide({background:deck.theme.background,...p.props,id:p.id}),...(p.at===undefined?{}:{at:p.at})});
+ }
+ if(p.op==='addElement'||p.op==='updateElement'){
+  const list=units(d,'element',p.slide),existing=list.find(e=>e.id===p.id);
+  let element:any;
+  if(p.op==='updateElement'){
+   if(!existing)fail('Elemento assente. Rileggi read_slides per gli identificatori validi.');
+   if([...Object.keys(p.props??{}),...(p.drop??[])].some(k=>k==='id'||k==='type'))fail('Identità e tipo dell’elemento non possono cambiare.');
+   element={...existing,...p.props};for(const key of p.drop??[])delete element[key];
+  }else{
+   if(existing)fail('Elemento già presente. Usa updateElement.');
+   const v=p.element as any;if(!record(v)||typeof v.type!=='string'||(v.id!==undefined&&v.id!==p.id))fail();
+   const partial={...v,id:p.id};
+   switch(v.type){
+    case 'text':element=defaultText(partial);break;
+    case 'code':element=defaultCode(partial);break;
+    case 'shape':element=defaultShape(v.shape??'rect',partial);break;
+    case 'image':element=defaultImage(v.src,partial);break;
+    case 'chart':element=defaultChart(v.option??{},partial);break;
+    case 'table':element=defaultTable(partial,d.format==='bento/slides'?d.theme:undefined);break;
+    case 'media':element=defaultMedia(v.kind??'video',v.src,partial);break;
+    case 'svg':element={x:100,y:100,w:400,h:300,rotation:0,opacity:1,...partial};break;
+    default:fail('Tipo di elemento non supportato.');
+   }
+  }
+  return concrete({op:'setElement',slide:p.slide,id:p.id,element,...(p.at===undefined?{}:{at:p.at})});
+ }
  const set=(kind:'block'|'slide'|'element',value:unknown)=>{
   if(!safeId(p.id))fail();const list=units(d,kind,p.slide),at=list.findIndex(v=>v.id===p.id);scope.push({kind,key:p.id,...(p.slide?{slide:p.slide}:{})});
   if(value!==undefined&&(!record(value)||value.id!==p.id))fail('L’identità del contenuto non può cambiare.');
@@ -105,6 +136,7 @@ export function previewChange(base:OfficeDocument,input:unknown){
  const list=[...new Map(scopes.map(s=>[dash.canonical(s),s])).values()],inverse=diffNative(next,base);
  if(!inverse.length)throw new dash.OfficeError('no_change','La modifica non cambia il contenuto.');
  if(new TextEncoder().encode(JSON.stringify(inverse)).length>dash.MAX_DOCUMENT_BYTES)fail('Modifica troppo grande da annullare.');
+ // applyOne materializes aliases in patches so defaults cannot drift at commit.
  return {next,patches,inverse,list};
 }
 export async function prepareChange(base:OfficeDocument,input:unknown,options:{protectRead?:boolean}={}):Promise<PreparedChange>{

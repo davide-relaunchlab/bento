@@ -13,50 +13,8 @@ export class OfficeError extends Error {
   constructor(public code: string, message: string, public status = 400, public details?: unknown) { super(message); }
 }
 export const MAX_DOCUMENT_BYTES = 8 * 1024 * 1024;
+import {dangerous,id,num,cell,column,columnData,dashPatchSchema as patchSchema} from './patch-schemas.ts';
 const MAX_ITEMS = 100_000;
-const dangerous = new Set(['__proto__', 'prototype', 'constructor']);
-const id = z.string().min(1).max(200).refine(v => !dangerous.has(v));
-const text = z.string().max(32_000);
-const scalar = z.union([text, z.number().finite(), z.boolean(), z.null()]);
-const bag = z.record(z.string(), z.unknown());
-const cell = z.object({ v: scalar.optional(), was:scalar.optional(), f: text.optional(), xlsxF:text.optional(), note: text.optional(),
-  format:text.optional(),color:text.optional(),bg:text.optional(),bold:z.boolean().optional(),italic:z.boolean().optional(),underline:z.boolean().optional(),wrap:z.boolean().optional(),
-  align:text.optional(),border:text.optional(),borderColor:text.optional(),borderStyle:text.optional(),againstHash:text.optional(),froze:text.optional(),by:text.optional(),at:text.optional(),why:text.optional(),
-}).passthrough();
-const column = z.object({id,name:text,type:z.enum(['text','number','money','percent','date','bool','enum']),formula:text.optional(),format:text.optional(),unit:text.optional(),
-  parsed:text.optional(),scale:z.number().finite().optional(),role:z.enum(['key','fk','label']).optional(),failed:z.number().int().nonnegative().optional(),w:z.number().finite().positive().optional()}).passthrough();
-const columnData=z.discriminatedUnion('enc',[
-  z.object({enc:z.literal('raw'),v:z.array(scalar).max(250000)}).passthrough(),
-  z.object({enc:z.literal('dict'),dict:z.array(text).max(250000),idx:z.array(z.number().int().nonnegative().nullable()).max(250000)}).passthrough(),
-]);
-const num = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
-const ids = z.array(id).max(MAX_ITEMS);
-const numbers = z.array(num).max(MAX_ITEMS);
-const values = z.array(scalar).max(MAX_ITEMS);
-const props = { props: bag, drop: z.array(id).max(100).optional() };
-const schemas = [
-  z.object({ op: z.literal('setCanvasCells'), sheet: id, cells: z.record(z.string(), cell.nullable()) }).strict(),
-  z.object({ op: z.literal('setCells'), sheet: id, col: id, rids: numbers, v: values }).strict(),
-  z.object({ op: z.literal('setOverrides'), sheet: id, keys: ids, v: z.array(cell.nullable()).max(MAX_ITEMS), dropEmpty: z.boolean().optional() }).strict(),
-  z.object({ op: z.literal('insertRows'), sheet: id, rids: numbers, at: numbers.optional(), values: z.record(id, values).optional(), overrides: z.record(id, cell).optional(), dropEmptyCells: z.boolean().optional() }).strict(),
-  z.object({ op: z.literal('deleteRows'), sheet: id, rids: numbers }).strict(),
-  z.object({ op: z.literal('setColumn'), sheet: id, col: id, patch: bag, drop:z.array(id).max(100).optional(),data: bag.optional() }).strict(),
-  z.object({ op: z.literal('addColumn'), sheet: id, column: z.object({ id, name: text, type: z.string() }).passthrough(), at: num.optional(), data: bag.optional() }).strict(),
-  z.object({ op: z.literal('removeColumn'), sheet: id, col: id }).strict(),
-  z.object({ op: z.literal('reorderColumns'), sheet: id, order: ids }).strict(),
-  z.object({ op: z.literal('setMeasure'), name: id, measure: bag.optional(), dropEmpty: z.boolean().optional() }).strict(),
-  z.object({ op: z.literal('setTitle'), title: z.string().min(1).max(300) }).strict(),
-  z.object({ op: z.literal('setSheetProps'), sheet: id, ...props }).strict(),
-  z.object({ op: z.literal('setDocProps'), ...props }).strict(),
-  z.object({ op: z.literal('setView'), id, view: bag.optional(), at: num.optional(), dropEmpty: z.boolean().optional() }).strict(),
-  z.object({ op: z.literal('setSheet'), id, sheet: bag.optional(), at: num.optional() }).strict(),
-  z.object({ op: z.literal('reorderSheets'), order: ids }).strict(),
-  z.object({ op: z.literal('setComment'), sheet: id, id, comment: bag.optional(), at: num.optional() }).strict(),
-  z.object({ op: z.literal('setCanvasSizes'), sheet: id, cols: z.record(z.string(), z.number().finite().positive().max(5000).nullable()).optional(), rows: z.record(z.string(), z.number().finite().positive().max(5000).nullable()).optional() }).strict(),
-  z.object({ op: z.literal('applySteps'), sheet: id, steps: z.array(bag).max(500) }).strict(),
-  z.object({ op: z.literal('refreshBinding'), sheet: id, cols: z.record(id, bag) }).strict(),
-] as const;
-const patchSchema = z.discriminatedUnion('op', schemas);
 const docFields = new Set(['title', 'meta', 'theme', 'story', 'chart', 'names', 'views', 'assets']);
 const sheetForbidden = new Set(['id', 'kind', 'columns', 'data', 'cells', 'rids', 'nextRid', 'collab', 'readonly', 'template', 'officeStructure']);
 const clone = <T>(v: T): T => structuredClone(v);

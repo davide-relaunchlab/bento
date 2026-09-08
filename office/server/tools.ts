@@ -1,4 +1,6 @@
-import {defaultText} from '../../slides/src/model.ts';
+import {z} from 'zod';
+import {nativePatchSchema,dashPatchSchema,nativeDocFields,nativeSlideFields} from '../shared/patch-schemas.ts';
+import {defaultText,defaultCode,defaultShape,defaultImage,defaultChart,defaultTable,defaultMedia,emptySlide} from '../../slides/src/model.ts';
 import {digest} from '../shared/content.ts';
 import { toolDefinitions } from '../shared/tools.ts';
 import { OfficeError, readRange } from '../shared/changes.ts';
@@ -10,6 +12,25 @@ export async function invokeTool(office:Office,name:string,raw:unknown):Promise<
   const parsed=tool.schema.safeParse(raw);if(!parsed.success)throw new OfficeError('invalid_request','Parametri dello strumento non validi.',400,parsed.error.issues);
   const input=parsed.data as Record<string,any>,id=input.workbookId as string;
   switch(name) {
+    case 'read_document':return office.get(id);
+    case 'get_editing_schema': {
+      const w=await office.get(id),d=w.document;
+      const schema=d.format==='bento/dash'?dashPatchSchema:nativePatchSchema;
+      return {workbookId:w.id,revision:w.revision,format:d.format,
+        canApply:w.role!=='viewer'&&(!w.agentPermission||w.agentPermission==='write'),
+        canPropose:w.role!=='viewer'&&w.agentPermission!=='read',
+        patchSchema:z.toJSONSchema(schema,{io:'input'}),
+        documentProperties:d.format==='bento/dash'?['title','meta','theme','story','chart','names','views','assets']:nativeDocFields[d.format],
+        ...(d.format==='bento/slides'?{slideProperties:nativeSlideFields,templates:{
+          slide:emptySlide({id:'new-slide',background:d.theme.background}),
+          text:defaultText({id:'new-text',html:'Your text'}),code:defaultCode({id:'new-code',content:'Your code'}),
+          shape:defaultShape('rect',{id:'new-shape'}),image:defaultImage('asset:image-id',{id:'new-image'}),
+          chart:defaultChart({xAxis:{data:['A','B']},yAxis:{},series:[{type:'bar',data:[10,20]}]},{id:'new-chart'}),
+          table:defaultTable({id:'new-table'},d.theme),media:defaultMedia('video','asset:video-id',{id:'new-media'}),
+          svg:{id:'new-svg',type:'svg',x:100,y:100,w:400,h:300,rotation:0,opacity:1,markup:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/></svg>'},
+        }}:d.format==='bento/type'?{templates:{block:{id:'new-paragraph',kind:'para',text:'Your text'}}}:{}),
+        guidance:'Copy workbookId verbatim. Read current revision before editing. Proposals do not change content until a person accepts; use apply_change for authorized direct edits. setSlide/setBlock/setElement remove when value/block/element is omitted. Preserve fields when replacing existing objects. All edits are validated, atomic, recorded and undoable.'};
+    }
     case 'propose_slide_text': {
       const w=await office.get(id);
       if(w.document.format!=='bento/slides')throw new OfficeError('invalid_format','Serve una presentazione.',400);
@@ -23,7 +44,7 @@ export async function invokeTool(office:Office,name:string,raw:unknown):Promise<
     case 'list_workbooks':return {workbooks:await office.list()};
     case 'describe_workbook': {
       const w=await office.get(id),d=w.document;
-      const metadata={id:w.id,format:d.format,revision:w.revision,title:d.title,docId:d.docId,role:w.role,agentPermission:w.agentPermission};
+      const metadata={id:w.id,workbookId:w.id,canApply:w.role!=='viewer'&&(!w.agentPermission||w.agentPermission==='write'),format:d.format,revision:w.revision,title:d.title,docId:d.docId,role:w.role,agentPermission:w.agentPermission};
       if(d.format==='bento/type')return {...metadata,page:d.page,layout:d.layout??null,type:d.type??null,styles:d.styles??{},blockCount:d.body.length,
         blocks:d.body.map(b=>({id:b.id,kind:b.kind,textLength:b.text.length}))};
       if(d.format==='bento/slides')return {...metadata,size:d.size,theme:d.theme,slideCount:d.slides.length,

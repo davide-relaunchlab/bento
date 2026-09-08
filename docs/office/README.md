@@ -51,3 +51,36 @@ Digitare `=` in una cella o nella barra formula apre le funzioni disponibili. Il
 Il catalogo deriva dalle 103 funzioni del motore e descrive le arità effettive. Le funzioni restano in inglese, gli argomenti sono tradotti e si separano con virgole. I campi delle formule di colonna offrono lo stesso aiuto senza richiedere `=`. Non viene promessa compatibilità con tutte le firme Excel.
 
 Le prove eseguite e lo stato della consegna sono in [IMPLEMENTATION.md](IMPLEMENTATION.md).
+
+### Modifiche complete via WebMCP (2026-09-08)
+
+`get_editing_schema` restituisce gli schemi validati delle patch, le proprietà
+modificabili e i modelli nativi. `read_document` legge tutti i dati del documento,
+inclusi tema, risorse e formattazione; per file grandi restano preferibili le
+letture paginate. Il catalogo e la validazione condividono `patch-schemas.ts`.
+
+Per una modifica richiesta dall'utente si usa `apply_change`: WebMCP conserva i
+permessi owner/editor della persona autenticata; gli agenti remoti richiedono
+una delega write. `propose_change` e `propose_slide_text` preparano esclusivamente
+proposte, applicate solo dopo l'accettazione di una persona.
+
+Nelle presentazioni `addSlide` richiede solo un nuovo `id`, con `props` e `at`
+facoltativi; `addElement` richiede slide, id ed element con type e contenuto.
+I valori predefiniti sono quelli dell'editor per testo, codice, forme, immagini,
+grafici, tabelle e media; SVG usa la geometria di base. `updateElement` modifica
+solo le proprietà indicate, conservando le altre. Le operazioni native set,
+riordino, proprietà del documento/slide e tutte le patch dei fogli restano
+accessibili. Per cancellare si omette value/block/element nelle rispettive
+operazioni set; il documento deve conservare almeno una slide/blocco/foglio.
+
+Creazione della slide e inserimento degli elementi possono appartenere alla
+stessa transazione. I controlli sugli ordini gestiscono anche una slide ancora
+assente nello snapshot iniziale. Le scorciatoie diventano patch concrete prima
+di salvare la proposta o modifica, evitando di ricalcolare i default in seguito.
+
+`create_workbook` restituisce esplicitamente workbookId e gli id iniziali di
+slide/blocchi/fogli. workbookId va copiato esattamente e non è docId. In un editor
+si può ometterlo per usare il file aperto. Un id esplicito errato non viene mai
+sostituito con quello di un altro documento. Se il salvataggio riesce ma il
+refresh fallisce, il risultato conserva il changeId e segnala solo il problema
+della vista, evitando ripetizioni involontarie della modifica.

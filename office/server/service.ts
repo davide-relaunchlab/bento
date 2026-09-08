@@ -39,7 +39,7 @@ export class Office {
     const identity=await digest({userId:this.actor.userId,operationId});
     const requestHash=await digest({title,format});
     const result=await this.create(title,undefined,format,undefined,{id:'created-'+identity,requestHash});
-    return {id:result.id,docId:result.docId,title:result.title,format:result.format,revision:result.revision,url:'/?workbook='+encodeURIComponent(result.id)};
+    return {id:result.id,workbookId:result.id,docId:result.docId,title:result.title,format:result.format,revision:result.revision,...(result.document.format==='bento/slides'?{slideIds:result.document.slides.map(s=>s.id)}:result.document.format==='bento/type'?{blockIds:result.document.body.map(b=>b.id)}:{sheetIds:result.document.sheets.map(s=>s.id)}),url:'/?workbook='+encodeURIComponent(result.id)};
   }
   private async createdReplay(id:string,requestHash:string) {
     const existing=await this.db.one<{request_hash:string}>('SELECT request_hash FROM changes WHERE workbook_id=? AND revision=0',[id]);

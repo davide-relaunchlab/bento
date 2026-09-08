@@ -1,3 +1,7 @@
+import {InterfaceControls} from './interface-controls.ts';
+import type {EditorAutomation} from '../shared/automation.ts';
+let automation:EditorAutomation|undefined;
+const interfaceControls=new InterfaceControls(document);
 import {startTheme} from '../../kernel/src/theme.ts';
 import {workbench} from '../editors/workbench.ts';
 import {brand,brandSymbol} from './brand.ts';
@@ -51,7 +55,7 @@ async function start(){
     actor=(await api('/api/session')).actor;
     const id=new URL(location.href).searchParams.get('workbook');
     if(id)await openWorkbook(id);else await archive();
-    webMCP=registerWebMCP(async()=>{await controller?.refresh();await refreshArchive?.();if(currentPanel)await renderPanel(currentPanel);},async()=>{if(controller?.pending)await controller.flush();},()=>controller?{page:'editor',app:controller.confirmed.document.format.split('/')[1],workbookId:controller.confirmed.id,title:controller.confirmed.title,revision:controller.revision,role:controller.confirmed.role}:{page:'dashboard'});
+    webMCP=registerWebMCP(async()=>{await controller?.refresh();await refreshArchive?.();if(currentPanel)await renderPanel(currentPanel);},async()=>{await automation?.flushActive();if(controller?.pending)await controller.flush();},()=>controller?{page:'editor',app:controller.confirmed.document.format.split('/')[1],workbookId:controller.confirmed.id,title:controller.confirmed.title,revision:controller.revision,role:controller.confirmed.role}:{page:'dashboard'},browserTool);
   }catch(error){
     if(error instanceof HttpError&&error.status===401){
       root.innerHTML=`<header class="office-header">${mark}${languagePicker()}</header><main class="office-welcome"><div class="office-file-mark">${icon('book')}</div><h1>${escape(ot('Sign in to your workspace'))}</h1><p>${escape(ot('Documents, slides and spreadsheets. Shared with people and agents.'))}</p><a class="office-button office-primary" href="${escape(chatGPTSignInPath(location.pathname+location.search))}">${escape(ot('Continue with ChatGPT'))}</a></main>`;wireLanguage();
@@ -83,7 +87,7 @@ async function openWorkbook(id:string){
     const title=document.querySelector<HTMLInputElement>('.dx-title');if(title&&document.activeElement!==title)title.value=controller!.store?.doc.title??controller!.confirmed.title;
   };
   if(snapshot.document.format==='bento/dash'){
-    const host:OfficeHost={mountWorkbench:workbench('Spreadsheet'),readOnly:controller.readOnly,pending:()=>controller!.pending,save:async()=>{await controller!.flush();},about:()=>void renderPanel('settings'),attach:(store,view)=>{controller!.attach(store,view);controller!.onState();},
+    const host:OfficeHost={mountWorkbench:workbench('Spreadsheet'),readOnly:controller.readOnly,attachAutomation:value=>{automation=value;},pending:()=>controller!.pending,save:async()=>{await controller!.flush();},about:()=>void renderPanel('settings'),attach:(store,view)=>{controller!.attach(store,view);controller!.onState();},
       api:{get document(){return structuredClone(controller!.store?.doc??controller!.confirmed.document) as DashDoc;},get revision(){return controller!.revision;},call:callTool}};
     (window as unknown as {__BENTO_OFFICE_HOST__:OfficeHost}).__BENTO_OFFICE_HOST__=host;
     document.getElementById('bento-doc')!.textContent=JSON.stringify(snapshot.document).replace(/</g,'\\u003c');
@@ -92,7 +96,7 @@ async function openWorkbook(id:string){
     const format=snapshot.document.format;
     const {configureApp}=await import('../../kernel/src/app.ts');configureApp({appId:format.replace('/','-'),appName:format,manifestUrl:''});
     const host:NativeEditorHost={format,get document(){return structuredClone(controller!.confirmed.document) as NativeDocument;},get readOnly(){return controller!.readOnly;},
-      pending:()=>controller!.pending,save:()=>controller!.flush(),exportHTML:()=>exportHTML(),about:()=>void renderPanel('settings'),changed:next=>controller!.nativeChanged(next),
+      attachAutomation:value=>{automation=value;},pending:()=>controller!.pending,save:()=>controller!.flush(),exportHTML:async()=>{await exportHTML();},about:()=>void renderPanel('settings'),changed:next=>controller!.nativeChanged(next),
       attach:adapter=>{controller!.attachNative(adapter);controller!.onState();},undo:()=>controller!.undo(),redo:()=>controller!.redo(),canUndo:()=>controller!.canUndo,canRedo:()=>controller!.canRedo,
       api:{get document(){return structuredClone(controller!.store?.doc??controller!.confirmed.document) as NativeDocument;},get revision(){return controller!.revision;},call:callTool}};
     (window as unknown as {__BENTO_NATIVE_HOST__:NativeEditorHost}).__BENTO_NATIVE_HOST__=host;
@@ -163,14 +167,16 @@ async function inspectChange(id:string,proposal:boolean){
     bind('undo-change',event=>busy(event.currentTarget as HTMLButtonElement,async()=>{await controller!.review('/changes/'+id+'/undo');await renderPanel('changes');}));
   }catch(error){if(generation===panelGeneration)body.textContent=error instanceof Error?error.message:String(error);}
 }
-async function exportHTML(draft=false){
+async function exportHTML(draft=false,download=true){
   if(!controller)return;if(!draft)await controller.flush();
   const doc=structuredClone(draft?(controller.store?.doc??controller.confirmed.document):controller.confirmed.document);
   const name=doc.format==='bento/type'?'Type':doc.format==='bento/slides'?'Slides':'Dash';
   const response=await fetch('/standalone/Bento_'+name+'.bento.html');if(!response.ok)throw new Error(ot('Export failed'));
   const shell=new DOMParser().parseFromString(await response.text(),'text/html');
   const {serializeWith,downloadFile,suggestedFileName}=await import('../../kernel/src/save.ts');
-  downloadFile(serializeWith(shell,await exportContent(doc)),suggestedFileName(doc,draft?'draft':''));
+  const html=serializeWith(shell,await exportContent(doc)),nameOut=suggestedFileName(doc,draft?'draft':'');
+  if(download)downloadFile(html,nameOut);
+  return {name:nameOut,mimeType:'text/html',...(download?{downloadStarted:true}:{content:html})};
 }
 async function exportContent(doc:OfficeDocument):Promise<OfficeDocument>{
   if(doc.format==='bento/dash')return (await import('../../dash/src/model.ts')).docForExport(doc);
@@ -182,7 +188,7 @@ function pickImport(){
   const input=document.createElement('input');input.type='file';input.accept='.csv,.tsv,.xlsx,.html';
   input.onchange=()=>{const file=input.files?.[0];if(file)void importFile(file).catch(notice);};input.click();
 }
-async function importFile(file:File){
+async function importFile(file:File,open=true){
   if(file.size>8*1024*1024)throw new Error(ot('The file exceeds 8 MB.'));
   let doc:OfficeDocument=newWorkbook(file.name.replace(/\.(xlsx|csv|tsv|bento\.html|html)$/i,''));
   if(/\.xlsx$/i.test(file.name)){
@@ -196,7 +202,24 @@ async function importFile(file:File){
     const {readonly:_,template:__,collab:___,blobs:____,...content}=await exportContent(parsed);doc=content as OfficeDocument;
   }
   doc=validateWorkbook(JSON.parse(JSON.stringify(doc)));
-  const created=await api('/api/workbooks','POST',{title:doc.title,document:doc});location.href='/?workbook='+encodeURIComponent(created.id);
+  const created=await api('/api/workbooks','POST',{title:doc.title,document:doc});if(open)location.href='/?workbook='+encodeURIComponent(created.id);return created;
+}
+async function browserTool(name:string,input:Record<string,any>):Promise<unknown>{
+  if(['save_document','export_document','open_workbook','open_workspace','import_file'].includes(name))await automation?.flushActive();
+  if(controller?.pending)await controller.flush();
+  switch(name){
+    case 'list_interface_controls':return {controls:interfaceControls.list()};
+    case 'use_interface_control':{const result=await interfaceControls.act(input as any);if(controller?.pending)await controller.flush();return {...result,revision:controller?.revision};}
+    case 'get_editor_commands':return {commands:automation?.commands()??[]};
+    case 'read_editor_state':return {state:automation?.state()??null,revision:controller?.revision,pending:controller?.pending??false,error:controller?.error??null};
+    case 'editor_command':{if(!automation)throw new Error('Open a document first.');const result=await automation.execute(input.command,input.input);if(controller?.pending)await controller.flush();return {result,state:automation.state(),revision:controller?.revision};}
+    case 'save_document':if(!controller)throw new Error('Open a document first.');await controller.flush();return {saved:true,revision:controller.revision};
+    case 'open_workbook':await api('/api/workbooks/'+encodeURIComponent(input.workbookId));location.href='/?workbook='+encodeURIComponent(input.workbookId);return {navigating:true};
+    case 'open_workspace':location.href='/';return {navigating:true};
+    case 'import_file':{const bytes=input.encoding==='base64'?Uint8Array.from(atob(input.content),c=>c.charCodeAt(0)):input.content;return importFile(new File([bytes],input.name),false);}
+    case 'export_document':if(!controller)throw new Error('Open a document first.');return exportHTML(false,input.download);
+    default:throw new Error('Unknown browser tool');
+  }
 }
 window.addEventListener('beforeunload',event=>{if(controller?.pending||controller?.editing||controller?.error){event.preventDefault();event.returnValue='';}});
 window.addEventListener('pagehide',()=>{controller?.dispose();webMCP.dispose();});

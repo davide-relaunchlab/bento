@@ -45,7 +45,7 @@ export function accessCondition(access:Access):{sql:string;args:unknown[]} {
   return {sql:`id=? AND acl_version=?${token?' AND EXISTS (SELECT 1 FROM agent_tokens WHERE id=? AND revoked_at IS NULL AND expires_at>?)':''}`,
     args:[w.id,w.acl_version,...(token?[token.id,Date.now()]:[])]};
 }
-export function personOnly(actor:Actor):void { if(actor.kind!=='person') throw new OfficeError('forbidden','Questa operazione richiede una persona autorizzata.',403); }
+export function personOnly(actor:Actor):void { if(actor.token || (actor.kind!=='person' && actor.kind!=='browser_agent')) throw new OfficeError('forbidden','Questa operazione richiede una persona autorizzata.',403); }
 
 // One effective role, shared by list and every read/write authorization.
 export function workbookAccessQuery(userId:string){

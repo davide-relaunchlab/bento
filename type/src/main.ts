@@ -1,3 +1,5 @@
+import {z} from 'zod';
+import {editorAutomation} from '../../office/shared/automation.ts';
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 The Bento authors
 //
@@ -822,15 +824,23 @@ document.getElementById('sign')!.addEventListener('click', async () => {
   try { who = localStorage.getItem('bento-type-name') ?? ''; } catch { /* ignore */ }
   const name = window.prompt('Your name, shown beside the signature', who);
   if (!name) return;
+  await signWithName(name);
+});
+
+async function signWithName(name:string){
   try { localStorage.setItem('bento-type-name', name); } catch { /* ignore */ }
+  if(store.readOnly)throw new Error('Document is read-only');
+  const source=JSON.stringify(store.doc),snapshot=structuredClone(store.doc);
   const key = await getKey();
-  const prev = store.doc.signatures[store.doc.signatures.length - 1] ?? null;
-  const entry = await signDoc(store.doc, key, { name, prev });
+  const prev = snapshot.signatures[snapshot.signatures.length - 1] ?? null;
+  const entry = await signDoc(snapshot, key, { name, prev });
   entry.at = new Date().toISOString();
+  if(store.readOnly||JSON.stringify(store.doc)!==source)throw new Error('Document changed while signing; retry on the current revision.');
   store.commit(d => { d.signatures.push(entry); });
   markDirty(); showTab('sigs'); await paintSigs();
   toast('Signed');
-});
+  return {signed:true,signatures:store.doc.signatures.length};
+}
 
 async function paintSigs() {
   const box = document.getElementById('sigsPanel')!;
@@ -1010,6 +1020,17 @@ paintTheme();
 
 repaginate();
 dirty = false; paintTitle();
+
+host?.attachAutomation?.(editorAutomation(()=>({format:store.doc.format,caret:editor.caret(),pages:metrics.pages,readOnly:store.readOnly}),()=>store.readOnly,[
+ {name:'select_text',description:'Select a text range in a block for the real formatting and editing handlers.',schema:z.object({id:z.string(),at:z.number().int().nonnegative(),to:z.number().int().nonnegative().optional()}).strict(),readOnly:true,run:input=>{const b=store.doc.body.find(b=>b.id===input.id);if(!b||input.at>b.text.length||(input.to??0)>b.text.length||(input.to!==undefined&&input.to<input.at))throw new Error('Invalid text range');editor.setCaret(input);}},
+ {name:'insert_text',description:'Replace current selection through the browser editing pipeline, preserving native input, tracking and anchors.',schema:z.object({text:z.string().max(100000)}).strict(),run:({text})=>{if(!editor.caret())throw new Error('Select text first');if(!document.execCommand('insertText',false,text))throw new Error('Browser rejected text insertion');}},
+ {name:'toggle_mark',description:'Toggle a native formatting mark on selected text.',schema:z.object({mark:z.enum(['bold','italic','underline','strike','code']),href:z.string().optional()}).strict(),run:({mark,href})=>editor.toggle(({bold:'b',italic:'i',underline:'u',strike:'s',code:'code'} as const)[mark as 'bold'],href)},
+ {name:'sign',description:'Sign the current content using the same local key and native signing handler. Private key material is never returned. Waits for signing and rejects concurrent edits.',schema:z.object({name:z.string().trim().min(1).max(200)}).strict(),run:({name})=>signWithName(name)},
+ {name:'verify_signatures',description:'Verify the content and signature chain with the native verifier.',schema:z.object({}).strict(),readOnly:true,run:()=>verifyChain(store.doc,store.doc.signatures)},
+ {name:'paginate',description:'Repaginate and return actual page metrics.',schema:z.object({}).strict(),readOnly:true,run:()=>{repaginate();return metrics;}},
+ {name:'print_html',description:'Return the actual paginated print document HTML.',schema:z.object({}).strict(),readOnly:true,run:()=>{repaginate();return {html:buildPrintDocument(store.doc,metrics,{pageNumbers:true})};}},
+ {name:'print',description:'Open the native browser print dialog.',schema:z.object({}).strict(),readOnly:true,run:()=>{doPrint();return {printDialogRequested:true};}},
+],()=>{(document.activeElement as HTMLElement|null)?.blur();}));
 
 // scripting surface, per PLATFORM §7
 (window as unknown as Record<string, unknown>).bento = host ? host.api : {

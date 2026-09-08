@@ -1,9 +1,11 @@
+import type {EditorAutomation} from '../../office/shared/automation.ts';
 import type {MountWorkbench} from '../../kernel/src/workbench.ts';
 // Optional host boundary. Standalone bento files have no host and retain the
 // original save, recovery, relay and agent APIs.
 import type { Store } from './store.ts';
 export interface OfficeHost {
   mountWorkbench?:MountWorkbench;
+  attachAutomation?(automation:EditorAutomation):void;
   readOnly:boolean;
   pending():boolean;
   save():Promise<void>;

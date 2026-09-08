@@ -141,6 +141,8 @@ export class Editor {
   private hostedReadOnly?: boolean
 
   /** Remote replacement must wait for callbacks holding live model references. */
+  flushActiveEdit(): void { this.canvas.commitTextEdit(); (document.activeElement as HTMLElement | null)?.blur(); }
+
   isEditing(): boolean {
     const focused = document.activeElement as HTMLElement | null
     return this.hostGesture || this.canvas.isEditingText || this.canvas.isPathEditing || this.canvas.isDrawing || !!focused && (

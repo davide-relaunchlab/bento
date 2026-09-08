@@ -63,3 +63,10 @@ test('review retry uses one operation even when the committed snapshot reply fai
     assert.equal((h.store.doc.sheets[0] as any).cells.A1,undefined);
   }finally{h.c.dispose();}
 });
+test('flush waits for native undo and redo transactions before reporting revision',async()=>{
+ const h=harness();try{
+  h.store.commit(cells(19));await h.c.flush();assert.equal(h.c.revision,1);
+  assert.equal(h.c.undo(),true);await h.c.flush();assert.equal(h.c.revision,2);assert.equal(h.c.pending,false);
+  assert.equal(h.c.redo(),true);await h.c.flush();assert.equal(h.c.revision,3);assert.equal((h.store.doc.sheets[0] as any).cells.A1.v,19);
+ }finally{h.c.dispose();}
+});

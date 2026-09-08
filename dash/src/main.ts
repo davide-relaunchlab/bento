@@ -1,3 +1,5 @@
+import {z} from 'zod';
+import {editorAutomation} from '../../office/shared/automation.ts';
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 The Bento authors
 // Boot sequence for bento/dash.
@@ -2041,6 +2043,18 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
       actions: [element('[data-act="settings"]'), element('[data-act="about"]')],
     });
   }
+  hosted?.attachAutomation?.(editorAutomation(()=>({format:store.doc.format,sheetId:grid.showingId(),selection:grid.sel.bounds(),readOnly:store.readOnly}),()=>store.readOnly,[
+    {name:'select_cell',description:'Select and reveal a zero-based visible cell in an existing sheet.',schema:z.object({sheetId:z.string().optional(),row:z.number().int().nonnegative(),col:z.number().int().nonnegative()}).strict(),readOnly:true,run:({sheetId,row,col})=>{if(sheetId){if(!store.doc.sheets.some(s=>s.id===sheetId))throw new Error('Unknown sheet');grid.setSheet(sheetId);}grid.revealCell(row,col,{focus:true});}},
+    {name:'select_range',description:'Select a zero-based rectangular visible range, for formatting and fill operations.',schema:z.object({top:z.number().int().nonnegative(),left:z.number().int().nonnegative(),bottom:z.number().int().nonnegative(),right:z.number().int().nonnegative()}).strict(),readOnly:true,run:({top,left,bottom,right})=>{grid.revealCell(bottom,right);grid.sel.moveTo(top,left);grid.sel.extendTo(bottom,right);grid.paint();grid.focusGrid();}},
+    {name:'copy_tsv',description:'Read selected cells as tab-separated text.',schema:z.object({}).strict(),readOnly:true,run:()=>({text:grid.copyTsv()})},
+    {name:'paste_tsv',description:'Paste through native cell conversion and formula handling at the selection.',schema:z.object({text:z.string().max(1000000)}).strict(),run:({text})=>grid.pasteTsv(text)},
+    {name:'clear_selection',description:'Clear selected cell content using the native handler.',schema:z.object({}).strict(),run:()=>grid.clearSelection()},
+    {name:'fill_down',description:'Fill down through the native formula-aware handler.',schema:z.object({}).strict(),run:()=>grid.fillDownSelection()},
+    {name:'import_csv',description:'Import CSV as a sheet using the native import pipeline.',schema:z.object({text:z.string().max(8000000),name:z.string().default('import')}).strict(),run:({text,name})=>applyImport(store,findingsEl,grid,text,name)},
+    {name:'validate',description:'Run workbook diagnostics.',schema:z.object({}).strict(),readOnly:true,run:()=>validateDoc(store.doc)},
+    {name:'comments',description:'Read comments with stable anchors.',schema:z.object({}).strict(),readOnly:true,run:()=>flatComments(store.doc)},
+    {name:'sql',description:'Query workbook data using the native SQL-to-pipeline compiler. Returns up to 1000 rows.',schema:z.object({text:z.string().max(100000),rows:z.number().int().min(0).max(1000).default(100)}).strict(),readOnly:true,run:({text,rows})=>{const r=runSql(text,{doc:store.doc});return {ok:r.ok,issues:r.issues,steps:r.compiled.frames.map(f=>({name:f.name,from:f.from,steps:f.steps,select:f.select})),columns:r.frame?.columns??[],n:r.frame?.n??0,rows:r.frame?sqlRows(r.frame,rows):[]};}},
+  ],()=>{(document.activeElement as HTMLElement|null)?.blur();}));
   hosted?.attach(store, { showingSheet: () => grid.showingId(), showSheet: (id) => grid.setSheet(id) })
   ;(window as unknown as Record<string, unknown>).bento = hosted?.api ?? {
     format: doc.format,

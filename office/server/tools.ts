@@ -1,3 +1,4 @@
+import {Folders} from './folders.ts';
 import {z} from 'zod';
 import {nativePatchSchema,dashPatchSchema,nativeDocFields,nativeSlideFields} from '../shared/patch-schemas.ts';
 import {defaultText,defaultCode,defaultShape,defaultImage,defaultChart,defaultTable,defaultMedia,emptySlide} from '../../slides/src/model.ts';
@@ -12,6 +13,23 @@ export async function invokeTool(office:Office,name:string,raw:unknown):Promise<
   const parsed=tool.schema.safeParse(raw);if(!parsed.success)throw new OfficeError('invalid_request','Parametri dello strumento non validi.',400,parsed.error.issues);
   const input=parsed.data as Record<string,any>,id=input.workbookId as string;
   switch(name) {
+    case 'read_revision':return office.get(id,input.revision);
+    case 'get_proposal':return office.proposalDetail(id,input.proposalId);
+    case 'accept_proposal':return office.accept(id,input.proposalId,input.operationId);
+    case 'reject_proposal':return office.reject(id,input.proposalId);
+    case 'move_workbook':return office.move(id,input.folderId);
+    case 'list_members':return {members:await office.members(id)};
+    case 'share_workbook':return office.share(id,input.email,input.role);
+    case 'unshare_workbook':return office.unshare(id,input.memberId);
+    case 'list_agents':return {agents:await office.agents(id)};
+    case 'create_agent':return office.createAgent(id,input.name,input.permission,input.expiresDays);
+    case 'revoke_agent':return office.revokeAgent(id,input.agentId);
+    case 'list_folders':return {folders:await new Folders(office.db,office.actor).list()};
+    case 'create_folder':return new Folders(office.db,office.actor).create(input.name);
+    case 'rename_folder':return new Folders(office.db,office.actor).rename(input.folderId,input.name);
+    case 'list_folder_members':return {members:await new Folders(office.db,office.actor).members(input.folderId)};
+    case 'share_folder':return new Folders(office.db,office.actor).share(input.folderId,input.email,input.role);
+    case 'unshare_folder':return new Folders(office.db,office.actor).unshare(input.folderId,input.memberId);
     case 'read_document':return office.get(id);
     case 'get_editing_schema': {
       const w=await office.get(id),d=w.document;

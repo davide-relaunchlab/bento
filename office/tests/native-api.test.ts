@@ -227,3 +227,16 @@ test('all formats expose schemas and full content without relaxing permissions o
   assert.equal((await api(owner,root)).body.revision,0);
  }
 });
+
+test('browser tools manage workspace with the same ACL as manual routes',async()=>{
+  const call=(name:string,input:unknown,who:Identity=owner)=>api(who,'/api/tools/'+name,'POST',input);
+  const folder=await call('create_folder',{name:'WebMCP parity'});assert.equal(folder.status,200);
+  const w=await create('bento/type');
+  assert.equal((await call('move_workbook',{workbookId:w.id,folderId:folder.body.id})).status,200);
+  assert.equal((await call('rename_folder',{folderId:folder.body.id,name:'Renamed'})).body.name,'Renamed');
+  assert.equal((await call('list_folders',{})).body.folders.some((f:any)=>f.id===folder.body.id),true);
+  assert.equal((await call('list_members',{workbookId:w.id})).status,200);
+  assert.equal((await call('move_workbook',{workbookId:w.id,folderId:null},viewer)).status,404);
+  const token=await api(owner,'/api/workbooks/'+w.id+'/agents','POST',{name:'scoped',permission:'write',expiresDays:1});
+  assert.equal((await call('list_folders',{},token.body.token)).status,403);
+});

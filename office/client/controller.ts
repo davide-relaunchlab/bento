@@ -19,6 +19,7 @@ export class WorkbookController {
   private undoIds:string[]=[];
   private redoIds:string[]=[];
   private reviewing=false;
+  private reversing?:Promise<void>;
   private reviewOperations=new Map<string,string>();
   private retryReview?:()=>Promise<unknown>;
   error:Error|null=null;
@@ -133,6 +134,7 @@ export class WorkbookController {
     }
   }
   async flush() {
+    if(this.reversing){await this.reversing;if(this.error)throw this.error;}
     if(this.draftError)throw this.draftError;
     this.error=null;this.start();await this.processing;
     if(this.error)throw this.error;
@@ -149,8 +151,8 @@ export class WorkbookController {
       this.onState();
     } catch(error) {this.error=error as Error;if(error instanceof HttpError&&[401,403,404].includes(error.status)){this.confirmed.role='viewer';if(this.store)this.store.readOnly=true;}this.onState();}
   }
-  undo(){if(!this.canUndo)return false;void this.reverse(false);return true;}
-  redo(){if(!this.canRedo)return false;void this.reverse(true);return true;}
+  undo(){if(!this.canUndo)return false;this.reversing=this.reverse(false).finally(()=>{this.reversing=undefined;});return true;}
+  redo(){if(!this.canRedo)return false;this.reversing=this.reverse(true).finally(()=>{this.reversing=undefined;});return true;}
   private async reverse(redo:boolean) {
     const stack=redo?this.redoIds:this.undoIds,id=stack.at(-1)!;
     const path='/changes/'+id+'/undo';

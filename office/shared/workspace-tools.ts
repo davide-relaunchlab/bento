@@ -3,6 +3,7 @@ const id=z.string().min(1).max(200),name=z.string().trim().min(1).max(200),email
 const workbookId=id,folderId=id,operationId=z.string().min(8).max(128);
 const tool=<T extends z.ZodRawShape>(name:string,description:string,shape:T,readOnly=false)=>({name,title:name.replaceAll('_',' '),description,schema:z.object(shape).strict(),readOnly});
 export const workspaceTools=[
+ tool('delete_workbook','Permanently delete an explicitly selected file, its history, proposals and access credentials. Owner session only; remote delegated tokens cannot delete. Read the current revision first. Deletion cannot be undone.',{workbookId,baseRevision:z.number().int().nonnegative()}),
  tool('read_revision','Read a historical document snapshot using current access rights.',{workbookId,revision:z.number().int().nonnegative()},true),
  tool('get_proposal','Inspect a proposed change and its differences.',{workbookId,proposalId:id},true),
  tool('accept_proposal','Accept a proposal as the signed-in user. Same write permission and conflict checks as the review panel.',{workbookId,proposalId:id,operationId}),

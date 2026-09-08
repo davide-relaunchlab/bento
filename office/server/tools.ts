@@ -13,6 +13,7 @@ export async function invokeTool(office:Office,name:string,raw:unknown):Promise<
   const parsed=tool.schema.safeParse(raw);if(!parsed.success)throw new OfficeError('invalid_request','Parametri dello strumento non validi.',400,parsed.error.issues);
   const input=parsed.data as Record<string,any>,id=input.workbookId as string;
   switch(name) {
+    case 'delete_workbook':return office.delete(id,input.baseRevision);
     case 'read_revision':return office.get(id,input.revision);
     case 'get_proposal':return office.proposalDetail(id,input.proposalId);
     case 'accept_proposal':return office.accept(id,input.proposalId,input.operationId);

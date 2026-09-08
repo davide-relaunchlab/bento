@@ -52,3 +52,12 @@ test('unknown explicit target gets recovery guidance and never falls back to ano
   assert.equal(received.workbookId,'wrong-id');assert.equal(result.error.code,'not_found');assert.match(result.error.recovery,/get_page_context/);
  }finally{globalThis.document=oldDoc;globalThis.fetch=oldFetch;}
 });
+test('deleting the open workbook returns to the archive without refreshing a removed document',async()=>{
+ const registered=new Map<string,any>();const oldDoc=globalThis.document,oldFetch=globalThis.fetch,oldLocation=globalThis.location;let target='',refreshed=false;
+ Object.assign(globalThis,{document:{modelContext:{registerTool:(t:any)=>registered.set(t.name,t)}},location:{assign:(url:string)=>{target=url;}}});
+ globalThis.fetch=async()=>Response.json({deleted:true,workbookId:'current'});
+ try{
+  registerWebMCP(async()=>{refreshed=true;},async()=>{},()=>({page:'editor',workbookId:'current'}));
+  const result=await registered.get('delete_workbook').execute({baseRevision:0});assert.equal(result.deleted,true);assert.equal(target,'/');assert.equal(refreshed,false);
+ }finally{globalThis.document=oldDoc;globalThis.fetch=oldFetch;globalThis.location=oldLocation;}
+});

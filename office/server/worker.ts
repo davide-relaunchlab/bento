@@ -68,6 +68,7 @@ export async function apiFetch(request:Request,env:Env):Promise<Response> {
       if(raw!==null){const parsed=revision.safeParse(Number(raw));if(!parsed.success)throw new OfficeError('invalid_request','Versione non valida.');version=parsed.data;}
       return json(await office.get(id,version));
     }
+    if(path.length===3&&method==='DELETE'){const input=await body(request,z.object({baseRevision:revision}).strict());return json(await office.delete(id,input.baseRevision));}
     if(section==='location'&&path.length===4&&method==='PATCH'){const input=await body(request,z.object({folderId:z.string().min(1).max(200).nullable()}).strict());return json(await office.move(id,input.folderId));}
     if(section==='range'&&path.length===4&&method==='GET') {const book=await office.get(id);if(book.document.format!=='bento/dash')throw new OfficeError('invalid_format','Le celle sono disponibili solo nei fogli di calcolo.',400);return json({revision:book.revision,cells:readRange(book.document,url.searchParams.get('sheet')??'',url.searchParams.get('range')??'')});}
     if(section==='changes') {

@@ -70,6 +70,21 @@ export class Office {
     }
     return this.get(id);
   }
+  async delete(id:string,baseRevision:number){
+    personOnly(this.actor);
+    const access=await authorize(this.db,this.actor,id,'manage'),c=accessCondition(access);
+    if(access.workbook.revision!==baseRevision)throw conflict();
+    const keys=await this.db.all<{key:string}>(`SELECT content_key AS key FROM workbooks WHERE id=? UNION SELECT content_key FROM changes WHERE workbook_id=? UNION SELECT prepared_key FROM changes WHERE workbook_id=? AND prepared_key IS NOT NULL UNION SELECT prepared_key FROM proposals WHERE workbook_id=?`,[id,id,id,id]);
+    const condition=c.sql+' AND revision=? AND owner_id=?',args=[...c.args,baseRevision,this.actor.userId];
+    // Foreign keys have NO ACTION: remove dependents and root in one atomic batch.
+    // Every statement checks the same current owner/ACL/revision before deleting.
+    const statements=['agent_tokens','proposals','changes','members'].map(table=>this.db.statement(`DELETE FROM ${table} WHERE workbook_id=? AND EXISTS(SELECT 1 FROM workbooks WHERE ${condition})`,[id,...args]));
+    statements.push(this.db.statement(`DELETE FROM workbooks WHERE ${condition}`,args));
+    const results=await this.db.env.DB.batch(statements);
+    if(results.at(-1)!.meta.changes!==1)throw conflict();
+    await this.db.discardUnreferenced(keys.map(row=>row.key));
+    return {deleted:true,workbookId:id};
+  }
   async move(id:string,folderId:string|null){
     personOnly(this.actor);const a=await authorize(this.db,this.actor,id,'manage'),c=accessCondition(a);
     if(folderId)await folderAccess(this.db,this.actor,folderId,true);

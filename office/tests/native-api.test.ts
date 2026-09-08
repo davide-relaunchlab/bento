@@ -240,3 +240,19 @@ test('browser tools manage workspace with the same ACL as manual routes',async()
   const token=await api(owner,'/api/workbooks/'+w.id+'/agents','POST',{name:'scoped',permission:'write',expiresDays:1});
   assert.equal((await call('list_folders',{},token.body.token)).status,403);
 });
+
+test('deletion is owner-only, revision-guarded and removes history, proposals and credentials',async()=>{
+ const w=await create('bento/slides'),root='/api/workbooks/'+w.id;
+ await api(owner,root+'/members','POST',{email:viewer.email,role:'editor'});
+ const token=await api(owner,root+'/agents','POST',{name:'delete-test',permission:'write',expiresDays:1});
+ const input={baseRevision:0};
+ assert.equal((await api(viewer,root,'DELETE',input)).status,403);
+ assert.equal((await api(token.body.token,root,'DELETE',input)).status,403);
+ assert.equal((await api(owner,root,'DELETE',{baseRevision:9})).status,409);
+ const other=await create('bento/type');
+ const removed=await api(owner,'/api/tools/delete_workbook','POST',{workbookId:w.id,baseRevision:0});assert.equal(removed.status,200);assert.equal(removed.body.deleted,true);
+ assert.equal((await api(owner,root)).status,404);assert.equal((await api(owner,root+'/changes')).status,404);
+ assert.equal((await api(token.body.token,root)).status,401);
+ assert.equal((await api(owner,'/api/workbooks/'+other.id)).status,200);
+ const db=await mf.getD1Database('DB');for(const table of ['changes','members','proposals','agent_tokens'])assert.equal((await db.prepare('SELECT count(*) AS n FROM '+table+' WHERE workbook_id=?').bind(w.id).first() as any).n,0);
+});

@@ -3,6 +3,9 @@ import {PACKED_LOCALES} from '../../dash/src/i18n/packed.ts';
 // English source keys. Every office string has a translation in each locale
 // actually shipped by dash; the check derives that list from its packed data.
 const rows:Record<string,Record<string,string>>={
+  "Delete file":{"it": "Elimina file", "es": "Eliminar archivo", "fr": "Supprimer le fichier", "de": "Datei löschen", "ja": "ファイルを削除", "zh-Hans": "删除文件", "zh-Hant": "刪除檔案"},
+  "This permanently deletes the file, its history and shared access. This cannot be undone.":{"it": "Il file, la sua cronologia e gli accessi condivisi saranno eliminati definitivamente. Non è possibile annullare questa operazione.", "es": "Se eliminarán permanentemente el archivo, su historial y los accesos compartidos. Esta acción no se puede deshacer.", "fr": "Le fichier, son historique et les accès partagés seront supprimés définitivement. Cette action est irréversible.", "de": "Die Datei, ihr Verlauf und geteilte Zugriffe werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.", "ja": "ファイル、履歴、共有アクセスを完全に削除します。この操作は取り消せません。", "zh-Hans": "这将永久删除文件、历史记录和共享访问权限。此操作无法撤销。", "zh-Hant": "這將永久刪除檔案、歷史記錄和共用存取權限。此操作無法復原。"},
+
   "Tools":{"it": "Strumenti", "es": "Herramientas", "fr": "Outils", "de": "Werkzeuge", "ja": "ツール", "zh-Hans": "工具", "zh-Hant": "工具"},
   "Insert":{"it": "Inserisci", "es": "Insertar", "fr": "Insérer", "de": "Einfügen", "ja": "挿入", "zh-Hans": "插入", "zh-Hant": "插入"},
   "View":{"it": "Vista", "es": "Vista", "fr": "Affichage", "de": "Ansicht", "ja": "表示", "zh-Hans": "视图", "zh-Hant": "檢視"},

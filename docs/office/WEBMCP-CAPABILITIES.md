@@ -132,3 +132,18 @@ Non annulla le restrizioni del browser su fullscreen, popup, clipboard di
 sistema o stampa. `printDialogRequested` e `downloadStarted` descrivono un
 avvio, non un file stampato/scaricato verificato. Le funzioni DOM/locali non
 sono disponibili a un client MCP remoto senza pagina aperta.
+
+## Eliminazione dei file
+
+`delete_workbook({workbookId,baseRevision})` elimina definitivamente un file,
+cronologia, proposte e credenziali delegate. Disponibile al proprietario dalla
+raccolta e dalla sessione WebMCP; editor, viewer e token remoti non possono
+eliminare file. La revisione e i permessi sono ricontrollati nella transazione.
+Il pulsante della raccolta mostra il nome del file e la natura definitiva
+dell'operazione. I contenuti senza più riferimenti vengono rimossi dallo storage;
+nessun altro file viene modificato. Se il file eliminato è quello aperto,
+WebMCP torna alla raccolta. Catalogo aggiornato: 45 strumenti complessivi.
+
+Verifica: 85 test passati, typecheck e build riusciti; prova browser del pulsante
+su mobile, annullamento che conserva il file, eliminazione e lettura successiva
+404, nessun errore JavaScript. Sono stati eliminati soltanto file locali di test.

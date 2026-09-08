@@ -26,6 +26,7 @@ export function registerWebMCP(after:()=>Promise<void>,before:()=>Promise<void>,
           args.workbookId=current.workbookId;
         }
         const result=await api('/api/tools/'+tool.name,'POST',args);
+        if(tool.name==='delete_workbook'&&page().workbookId===args.workbookId){location.assign('/');return result;}
         try {await after();}catch{return {...result,refreshWarning:'Operazione riuscita; aggiornamento della vista non riuscito. Rileggi il documento prima di continuare.'};}
         return result;
       }catch(error){

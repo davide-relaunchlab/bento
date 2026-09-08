@@ -1,15 +1,14 @@
-# bento/office
+# dowitme
 
 Spazio condiviso per fogli di calcolo, derivato da `nyblnet/bento` al commit `01000838496ec863ba1035eae12a8a4943020cdc`. La licenza MIT e i copyright upstream restano nel repository e nei file autonomi. `dash/` è l'editor effettivo: formule, grafici, dataset, import/export e patch provengono da Bento.
 
 ## Sviluppo locale
 
-Richiede Node moderno con supporto TypeScript tramite `tsx`.
+Richiede Node 24 e npm 11. Una sola installazione dalla radice risolve anche le dipendenze degli editor, attraverso npm workspaces. Il lockfile di riferimento è `package-lock.json` nella radice.
 
 ```sh
 npm ci
-npm --prefix dash ci
-npm --prefix dash run build:single
+npm run build
 npm run dev
 ```
 

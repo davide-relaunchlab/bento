@@ -40,15 +40,12 @@ Tools expose document structure and stable identifiers for cells, blocks, slides
 
 ## Run locally
 
-Use the Node.js version in [`.nvmrc`](.nvmrc).
+Use Node.js 24 (see [`.nvmrc`](.nvmrc)) and npm 11. All editors are npm workspaces: install once at the repository root.
 
 ```sh
 git clone https://github.com/davide-relaunchlab/dowitme.git
 cd dowitme
 npm ci
-npm --prefix dash ci
-npm --prefix type ci
-npm --prefix slides ci
 npm run build
 npm run dev
 ```

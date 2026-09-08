@@ -1,5 +1,5 @@
 {
-  "name": "bento-office",
+  "name": "dowitme",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -17,15 +17,32 @@
     "zod": "4.5.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "5.20260907.1",
-    "@modelcontextprotocol/client": "^2.0.0",
+    "@cloudflare/workers-types": "5.20260908.1",
+    "@modelcontextprotocol/client": "2.0.0",
     "@openai/sites-vite-plugin": "0.2.0",
-    "@types/node": "24.13.2",
+    "@types/node": "24.13.3",
     "drizzle-kit": "0.31.10",
     "esbuild": "0.28.2",
     "miniflare": "4.20260730.0",
     "tsx": "4.23.13",
-    "typescript": "5.8.3",
+    "typescript": "5.9.3",
     "vite": "8.2.2"
+  },
+  "engines": {
+    "node": ">=24.0.0 <27",
+    "npm": ">=11.0.0 <12"
+  },
+  "packageManager": "npm@11.12.1",
+  "workspaces": [
+    "dash",
+    "slides",
+    "type",
+    "spaces"
+  ],
+  "overrides": {
+    "miniflare": {
+      "undici": "7.29.1"
+    },
+    "esbuild": "$esbuild"
   }
 }

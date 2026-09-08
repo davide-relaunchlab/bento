@@ -9,7 +9,7 @@
 # signed bytes are the served bytes (docs/RELEASING.md). Keep it that way —
 # do not add secrets or release steps to this workflow.
 
-name: CI
+name: Editor compatibility
 
 on:
   pull_request:
@@ -47,14 +47,9 @@ jobs:
           # stripping (node scripts/test-sync.ts).
           node-version: 24
           cache: npm
-          cache-dependency-path: |
-            slides/package-lock.json
-            spaces/package-lock.json
-            dash/package-lock.json
-            type/package-lock.json
+          cache-dependency-path: package-lock.json
 
-      - name: Install
-        working-directory: slides
+      - name: Install all workspaces
         run: npm ci
 
       - name: Which targets anim treats as elements
@@ -93,13 +88,13 @@ jobs:
 
       - name: Typecheck
         working-directory: slides
-        run: node_modules/.bin/tsc -b
+        run: ../node_modules/.bin/tsc -b
 
       - name: Typecheck kernel (standalone)
         # Apps also typecheck kernel transitively through their imports; this
         # catches kernel-only errors under the kernel's own flags.
         working-directory: slides
-        run: node_modules/.bin/tsc -p ../kernel
+        run: ../node_modules/.bin/tsc -p ../kernel
 
       - name: Build single-file shell
         working-directory: slides
@@ -109,13 +104,9 @@ jobs:
         run: node scripts/shell-gate.mjs slides/dist-single/Bento_Slides.bento.html
 
       # spaces: a second app proving the kernel seam — same pipeline, same gate.
-      - name: Install (spaces)
-        working-directory: spaces
-        run: npm ci
-
       - name: Typecheck (spaces)
         working-directory: spaces
-        run: node_modules/.bin/tsc -b
+        run: ../node_modules/.bin/tsc -b
 
       - name: Build single-file shell (spaces)
         working-directory: spaces
@@ -143,7 +134,7 @@ jobs:
         # (Bundled: the kernel transport uses parameter properties, which node's
         # strip-only TypeScript loader refuses.)
         run: |
-          slides/node_modules/.bin/esbuild scripts/test-spaces-invite.ts --bundle --platform=node --format=esm \
+          node_modules/.bin/esbuild scripts/test-spaces-invite.ts --bundle --platform=node --format=esm \
             --outfile="$RUNNER_TEMP/test-spaces-invite.mjs"
           node "$RUNNER_TEMP/test-spaces-invite.mjs"
 
@@ -157,7 +148,7 @@ jobs:
         # work: mixed scopes, interleaved undo/redo, and two pages edited in
         # turn. (Bundled: store.ts imports './model' extensionless.)
         run: |
-          slides/node_modules/.bin/esbuild scripts/test-spaces-undo.ts --bundle --platform=node --format=esm \
+          node_modules/.bin/esbuild scripts/test-spaces-undo.ts --bundle --platform=node --format=esm \
             --outfile="$RUNNER_TEMP/test-spaces-undo.mjs"
           node "$RUNNER_TEMP/test-spaces-undo.mjs"
 
@@ -209,7 +200,7 @@ jobs:
         # callout leaving as a blockquote is the format being honest, not a bug.
         # (Bundled: the app's imports are extensionless.)
         run: |
-          slides/node_modules/.bin/esbuild scripts/test-spaces-roundtrip.ts --bundle --platform=node --format=esm \
+          node_modules/.bin/esbuild scripts/test-spaces-roundtrip.ts --bundle --platform=node --format=esm \
             --outfile="$RUNNER_TEMP/test-spaces-roundtrip.mjs"
           node "$RUNNER_TEMP/test-spaces-roundtrip.mjs"
 
@@ -247,13 +238,9 @@ jobs:
         run: node scripts/test-spaces.mjs --manifest
 
       # dash: the data app — same pipeline, same gate.
-      - name: Install (dash)
-        working-directory: dash
-        run: npm ci
-
       - name: Typecheck (dash)
         working-directory: dash
-        run: node_modules/.bin/tsc -b
+        run: ../node_modules/.bin/tsc -b
 
       - name: Build single-file shell (dash)
         working-directory: dash
@@ -375,7 +362,7 @@ jobs:
         # browser half needs Chrome — it self-skips where there is none, so the
         # node half still gates.
         run: |
-          slides/node_modules/.bin/esbuild scripts/test-sanitize.ts --bundle --platform=node --format=esm \
+          node_modules/.bin/esbuild scripts/test-sanitize.ts --bundle --platform=node --format=esm \
             --outfile="$RUNNER_TEMP/test-sanitize.mjs"
           node "$RUNNER_TEMP/test-sanitize.mjs"
 
@@ -559,8 +546,8 @@ jobs:
         # and lose autosave. Renaming without carrying the data over would empty
         # a visible feature, so the migration is tested in both directions.
         run: |
-          slides/node_modules/.bin/esbuild scripts/test-autosave.ts --bundle --platform=node --format=esm \
-            --alias:fake-indexeddb/auto=./slides/node_modules/fake-indexeddb/auto/index.js \
+          node_modules/.bin/esbuild scripts/test-autosave.ts --bundle --platform=node --format=esm \
+            --alias:fake-indexeddb/auto=./node_modules/fake-indexeddb/auto/index.js \
             --outfile="$RUNNER_TEMP/test-autosave.mjs"
           BENTO_TEST_APP=bento-slides node "$RUNNER_TEMP/test-autosave.mjs"
           BENTO_TEST_APP=bento-spaces node "$RUNNER_TEMP/test-autosave.mjs"
@@ -585,7 +572,7 @@ jobs:
         # deck and a realistic chart stay silent, and that a deliberately broken
         # deck trips every check.
         run: |
-          slides/node_modules/.bin/esbuild scripts/test-validate.ts --bundle --platform=node --format=esm --outfile="$RUNNER_TEMP/test-validate.mjs"
+          node_modules/.bin/esbuild scripts/test-validate.ts --bundle --platform=node --format=esm --outfile="$RUNNER_TEMP/test-validate.mjs"
           node "$RUNNER_TEMP/test-validate.mjs"
 
       - name: bento/dash model rig
@@ -1193,18 +1180,14 @@ jobs:
         # so run by hand it fails with ERR_MODULE_NOT_FOUND and looks like a
         # broken product. It had never been registered here.
         run: |
-          slides/node_modules/.bin/esbuild scripts/test-slide-store.ts --bundle --platform=node --format=esm \
+          node_modules/.bin/esbuild scripts/test-slide-store.ts --bundle --platform=node --format=esm \
             --outfile="$RUNNER_TEMP/test-slide-store.mjs"
           node "$RUNNER_TEMP/test-slide-store.mjs"
 
       # bento/type: the word processor. Same pipeline, same gate.
-      - name: Install (type)
-        working-directory: type
-        run: npm ci
-
       - name: Typecheck (type)
         working-directory: type
-        run: node_modules/.bin/tsc -b
+        run: ../node_modules/.bin/tsc -b
 
       - name: Build single-file shell (type)
         working-directory: type
@@ -1382,7 +1365,7 @@ jobs:
 
       - name: Clipboard embedded-font rig
         run: |
-          slides/node_modules/.bin/esbuild scripts/test-clipboard.ts --bundle --platform=node --format=esm --outfile="$RUNNER_TEMP/test-clipboard.mjs"
+          node_modules/.bin/esbuild scripts/test-clipboard.ts --bundle --platform=node --format=esm --outfile="$RUNNER_TEMP/test-clipboard.mjs"
           node "$RUNNER_TEMP/test-clipboard.mjs"
 
       - name: CRDT property-removal rig

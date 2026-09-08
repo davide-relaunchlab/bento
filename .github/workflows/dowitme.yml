@@ -1,0 +1,36 @@
+name: dowitme
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dowitme-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm install --global npm@11.12.1
+      - run: npm ci
+      - run: npm audit --audit-level=moderate
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Validate standalone exports
+        run: |
+          node scripts/shell-gate.mjs dash/dist-single/Bento_Dash.bento.html
+          node scripts/shell-gate.mjs type/dist-single/Bento_Type.bento.html
+          node scripts/shell-gate.mjs slides/dist-single/Bento_Slides.bento.html

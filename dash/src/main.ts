@@ -2037,7 +2037,8 @@ function boot(doc: DashDoc, repaired: number, frozen?: 'policy' | 'version', sav
       header: element('.dx-bar'), title: titleEl,
       navigation: [], tools: [element('.dx-insert-dd'), element('.dx-data-dd')],
       history: [element('[data-act="undo"]'), element('[data-act="redo"]')],
-      actions: [element('[data-act="save"]'), element('[data-act="settings"]'), element('[data-act="about"]')],
+      primary: [element('[data-act="save"]')],
+      actions: [element('[data-act="settings"]'), element('[data-act="about"]')],
     });
   }
   hosted?.attach(store, { showingSheet: () => grid.showingId(), showSheet: (id) => grid.setSheet(id) })

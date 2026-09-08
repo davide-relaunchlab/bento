@@ -7,6 +7,8 @@ export interface WorkbenchParts {
   tools: HTMLElement[];
   history: HTMLElement[];
   actions: HTMLElement[];
+  primary: HTMLElement[];
+  prepareActions?():void;
   status?: HTMLElement[];
 }
 export type MountWorkbench = (parts: WorkbenchParts) => void;

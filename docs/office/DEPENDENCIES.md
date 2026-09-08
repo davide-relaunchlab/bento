@@ -84,5 +84,6 @@ controlli degli editor e della suite; non si copiano directory o bundle.
   undo/redo e download HTML per tutti i tre formati. Nessun errore JavaScript
   durante questi flussi. Barra a 390px senza overflow orizzontale.
 
-La verifica locale non equivale a pubblicazione: questo cambiamento è nella
-PR di manutenzione, non nel sito già pubblicato.
+La composizione iniziale è stata pubblicata su Sites dopo richiesta del
+manutentore. Per questo progetto la consegna delle modifiche verificate
+include la pubblicazione sul sito esistente, come richiesto dal manutentore.

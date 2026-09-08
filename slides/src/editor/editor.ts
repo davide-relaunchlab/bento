@@ -533,7 +533,7 @@ export class Editor {
     this.host?.mountWorkbench?.({
       header: bar, title,
       navigation: [slidesB, formatB], tools: [insert], history: [undoB, redoB],
-      actions: [pdfB, saveGroup, langD, helpB],
+      primary: [saveB], actions: [pdfB, langD, helpB],
     })
 
     this.wireDrawerDismiss()

@@ -1124,6 +1124,8 @@ host?.mountWorkbench?.({
   navigation: [byId('sidebar'), byId('props')],
   tools: ['gFormat','gInsert','gReview'].map(id => document.getElementById(id)).filter((el): el is HTMLElement => !!el),
   history: [byId('undo'), byId('redo')],
-  actions: [byId('theme'), byId('save'), byId('more').parentElement!],
+  primary: [byId('save')],
+  actions: [byId('theme'), ...Array.from(moreMenu.children).filter((node):node is HTMLButtonElement=>node instanceof HTMLButtonElement)],
+  prepareActions: refreshMenuLabels,
   status: [byId('status')],
 });

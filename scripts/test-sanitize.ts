@@ -3,7 +3,7 @@
 // Copyright (c) 2026 The Bento authors
 // Untrusted-document rig: what a deck may put into the reader's DOM.
 //
-//   slides/node_modules/.bin/esbuild scripts/test-sanitize.ts --bundle \
+//   node_modules/.bin/esbuild scripts/test-sanitize.ts --bundle \
 //     --platform=node --format=esm --outfile="$TMPDIR/test-sanitize.mjs" \
 //     && node "$TMPDIR/test-sanitize.mjs"
 //
@@ -562,7 +562,7 @@ async function runBrowserSection(chrome: string) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bento-sanitize-'))
   const entry = path.join(tmp, 'probe.ts')
   fs.writeFileSync(entry, probeSource(repoFile('slides/src/render.ts'), repoFile('slides/src/model.ts')))
-  execFileSync(repoFile('slides/node_modules/.bin/esbuild'), [
+  execFileSync(repoFile('node_modules/.bin/esbuild'), [
     entry, '--bundle', '--format=esm', '--outfile=' + path.join(tmp, 'probe.js'),
   ], { stdio: 'pipe' })
   const bundle = fs.readFileSync(path.join(tmp, 'probe.js'), 'utf8')

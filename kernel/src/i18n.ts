@@ -18,7 +18,7 @@
 // fall everyone back to English. Registration also clears the memo.
 
 
-import { lsDel, lsGet, lsSet } from './storage.ts'
+import { lsGet, lsSet } from './storage.ts'
 
 export type Catalog = Record<string, string>
 export interface LocaleChoice { code: string; label: string }
@@ -193,8 +193,9 @@ export const locale = (): string => activeLocale()
 
 /** Persist the override and switch. Callers re-render their own UI. */
 export function setLocale(code: string): void {
-  if (code === 'en') lsDel('bento-lang')
-  else lsSet('bento-lang', code)
+  // English is an explicit choice too. Removing the override would restore
+  // navigator.language on reload (or when another editor registers catalogs).
+  lsSet('bento-lang', code)
   current = code
 }
 

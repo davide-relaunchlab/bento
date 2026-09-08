@@ -41,6 +41,7 @@ function busy(button:HTMLButtonElement,work:()=>Promise<unknown>){button.disable
 function bind(id:string,action:(event:MouseEvent)=>void){document.querySelector<HTMLButtonElement>(`[data-office="${id}"]`)?.addEventListener('click',action);}
 
 async function start(){
+  document.documentElement.lang=locale();
   root.innerHTML=`<header class="office-header">${mark}${languagePicker()}</header><main class="office-opening" role="status">${escape(ot('Loading…'))}</main>`;wireLanguage();
   try {
     actor=(await api('/api/session')).actor;

@@ -52,6 +52,13 @@ jobs:
       - name: Install all workspaces
         run: npm ci
 
+      - name: Hosted editor persistence
+        # Office delegates must preserve live object identity and route undo,
+        # readonly checks and edits through the suite's transaction controller.
+        run: |
+          node --import tsx scripts/test-slide-office.ts
+          node --import tsx scripts/test-type-office.ts
+
       - name: Which targets anim treats as elements
         # The element/plain-object split ran on HTMLElement||SVGElement, which
         # excludes MathML — formula symbols became plain-object tweens, with
